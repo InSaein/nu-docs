@@ -1,7 +1,49 @@
 import Link from "next/link";
-import { AppShell, SectionHeading, StatusPill } from "@/components/app-shell";
-import { requests } from "@/lib/mock-data";
+
+const featureCards = [
+  { title: "Documents & Manuals", description: "Collection of documents, forms and manuals for administration, students, faculty, and staff.", icon: "▰" },
+  { title: "Students", description: "Stores and tracks all student information, including grades, accountabilities, and more.", icon: "♟" },
+  { title: "Student Services", description: "Group of modules for student development, activities, and services.", icon: "✥" },
+];
 
 export default function StudentDashboard() {
-  return <AppShell><header className="topbar"><div><span className="eyebrow">Tuesday, September 4, 2026</span><h1 className="display-font page-title">Good morning, Samantha.</h1><p className="muted">Here is the latest on your school documents.</p></div><span className="avatar">SR</span></header><div className="grid-3"><div className="surface stat"><span className="muted">Active requests</span><strong className="stat-number">01</strong><span className="muted" style={{ fontSize: 12 }}>Currently processing</span></div><div className="surface stat"><span className="muted">Ready for release</span><strong className="stat-number">01</strong><span className="muted" style={{ fontSize: 12 }}>Pick-up instructions available</span></div><div className="surface stat"><span className="muted">Unread notices</span><strong className="stat-number">02</strong><span className="muted" style={{ fontSize: 12 }}>New updates for you</span></div></div><SectionHeading title="Your latest requests" link="View history" href="/student/history" /><div className="surface table-wrap"><table className="data-table"><thead><tr><th>Request number</th><th>Document</th><th>Date requested</th><th>Status</th><th></th></tr></thead><tbody>{requests.slice(0, 2).map((request) => <tr key={request.id}><td><strong>{request.id}</strong></td><td>{request.document}</td><td>{request.date}</td><td><StatusPill tone={request.tone}>{request.status}</StatusPill></td><td><Link className="link" href="/student/track">View →</Link></td></tr>)}</tbody></table></div><div className="section-heading"><h2>Need another document?</h2></div><div className="surface pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 20, flexWrap: "wrap" }}><div><strong style={{ display: "block", marginBottom: 5 }}>Start a new request</strong><span className="muted" style={{ fontSize: 13 }}>Choose a document and submit your requirements online.</span></div><Link className="btn btn-primary" href="/student/request">Request a document →</Link></div></AppShell>;
+  return (
+    <div className="portal-home">
+      <header className="portal-header">
+        <div className="portal-brand-group">
+          <button className="portal-menu-button" type="button" aria-label="Open application menu">⠿</button>
+          <span className="portal-logo" aria-hidden="true">NU</span>
+          <strong>NUIS BALIWAG</strong>
+        </div>
+        <div className="portal-account">
+          <Link href="/student/notifications" className="portal-notification" aria-label="View notifications">●</Link>
+          <span>Hi, Saein Marc</span>
+          <span className="portal-avatar" aria-hidden="true">●</span>
+        </div>
+      </header>
+
+      <main className="portal-main">
+        <p className="portal-welcome">Good afternoon, welcome to your control center!</p>
+        <div className="portal-toolbar">
+          <Link href="/student/dashboard" className="portal-breadcrumb"><span className="portal-home-icon" aria-hidden="true">⌂</span>Home</Link>
+          <label className="portal-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search..." aria-label="Search" /></label>
+        </div>
+
+        <section className="portal-feature-grid" aria-label="Student portal services">
+          {featureCards.map((card) => (
+            <article className="portal-feature-card" key={card.title}>
+              <span className="portal-feature-icon" aria-hidden="true">{card.icon}</span>
+              <div><h2>{card.title}</h2><p>{card.description}</p></div>
+            </article>
+          ))}
+          <Link href="/student/request" className="portal-feature-card portal-feature-link">
+            <span className="portal-feature-icon" aria-hidden="true">▤</span>
+            <span><h2>NU-Docs</h2><p>Request and track your school documents online.</p></span>
+          </Link>
+        </section>
+      </main>
+
+      <footer className="portal-footer"><span>National University © 2018 - 2026</span><Link href="/student/dashboard">Privacy Policy</Link></footer>
+    </div>
+  );
 }
