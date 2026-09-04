@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PortalFooter, PortalHeader } from "@/components/app-shell";
 
 const featureCards = [
   { title: "Documents & Manuals", description: "Collection of documents, forms and manuals for administration, students, faculty, and staff.", icon: "▰" },
@@ -9,18 +10,7 @@ const featureCards = [
 export default function StudentDashboard() {
   return (
     <div className="portal-home">
-      <header className="portal-header">
-        <div className="portal-brand-group">
-          <button className="portal-menu-button" type="button" aria-label="Open application menu">⠿</button>
-          <span className="portal-logo" aria-hidden="true">NU</span>
-          <strong>NUIS BALIWAG</strong>
-        </div>
-        <div className="portal-account">
-          <Link href="/student/notifications" className="portal-notification" aria-label="View notifications">●</Link>
-          <span>Hi, Saein Marc</span>
-          <span className="portal-avatar" aria-hidden="true">●</span>
-        </div>
-      </header>
+      <PortalHeader />
 
       <main className="portal-main">
         <p className="portal-welcome">Good afternoon, welcome to your control center!</p>
@@ -36,14 +26,14 @@ export default function StudentDashboard() {
               <div><h2>{card.title}</h2><p>{card.description}</p></div>
             </article>
           ))}
-          <Link href="/student/request" className="portal-feature-card portal-feature-link">
+          <Link href="/student/nu-docs" className="portal-feature-card portal-feature-link">
             <span className="portal-feature-icon" aria-hidden="true">▤</span>
             <span><h2>NU-Docs</h2><p>Request and track your school documents online.</p></span>
           </Link>
         </section>
       </main>
 
-      <footer className="portal-footer"><span>National University © 2018 - 2026</span><Link href="/student/dashboard">Privacy Policy</Link></footer>
+      <PortalFooter />
     </div>
   );
 }

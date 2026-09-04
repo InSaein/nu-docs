@@ -1,5 +1,13 @@
 import Link from "next/link";
 
+export function PortalHeader() {
+  return <header className="portal-header"><div className="portal-brand-group"><button className="portal-menu-button" type="button" aria-label="Open application menu">⠿</button><span className="portal-logo" aria-hidden="true">NU</span><strong>NUIS BALIWAG</strong></div><div className="portal-account"><Link href="/student/notifications" className="portal-notification" aria-label="View notifications">●</Link><span>Hi, Saein Marc</span><span className="portal-avatar" aria-hidden="true">●</span></div></header>;
+}
+
+export function PortalFooter() {
+  return <footer className="portal-footer"><span>National University © 2018 - 2026</span><Link href="/student/dashboard">Privacy Policy</Link></footer>;
+}
+
 const studentLinks = [["⌂", "Dashboard", "/student/dashboard"], ["+", "Request document", "/student/request"], ["#", "Track request", "/student/track"], ["≡", "Request history", "/student/history"], ["!", "Notifications", "/student/notifications"]];
 
 export function AppShell({ children, role = "student" }: { children: React.ReactNode; role?: "student" | "registrar" }) {
