@@ -1,0 +1,4 @@
+import { AppShell, SectionHeading, StatusPill } from "@/components/app-shell";
+import { requests } from "@/lib/mock-data";
+
+export default function HistoryPage() { return <AppShell><header className="topbar"><div><span className="eyebrow">Student services</span><h1 className="display-font page-title">Request history</h1><p className="muted">A record of every document request you have made.</p></div><span className="avatar">SR</span></header><SectionHeading title="All requests" /><div className="surface table-wrap"><table className="data-table"><thead><tr><th>Request number</th><th>Document</th><th>Date requested</th><th>Fee</th><th>Status</th></tr></thead><tbody>{requests.map((request) => <tr key={request.id}><td><strong>{request.id}</strong></td><td>{request.document}</td><td>{request.date}</td><td>{request.fee}</td><td><StatusPill tone={request.tone}>{request.status}</StatusPill></td></tr>)}</tbody></table></div></AppShell>; }
