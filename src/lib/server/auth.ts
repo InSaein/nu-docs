@@ -15,6 +15,11 @@ export async function logout() {
   redirect("/login");
 }
 
+export async function adminLogout() {
+  await clearAuthSession();
+  redirect("/admin/login");
+}
+
 export async function login(previousState: LoginState, formData: FormData): Promise<LoginState> {
   void previousState;
 

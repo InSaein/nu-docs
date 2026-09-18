@@ -100,7 +100,7 @@ button, input, select, textarea { font: inherit; }
 .notification:last-child { border: 0; }
 .notification-dot { flex: 0 0 9px; height: 9px; border-radius: 50%; background: var(--accent); margin-top: 5px; }
 .portal-home { min-height: 100vh; display: flex; flex-direction: column; background: #fafafa; color: #303030; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
-.portal-header { min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 0 8px 0 12px; background: #202020; border-bottom: 4px solid var(--accent); color: #f8f8f8; font-size: 13px; }
+.portal-header { min-height: 42px; display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 0 8px 0 12px; background: var(--primary); border-bottom: 4px solid var(--accent); color: #f8f8f8; font-size: 13px; }
 .portal-brand-group, .portal-account { display: flex; align-items: center; gap: 10px; }
 .portal-menu-button { border: 0; padding: 0; background: transparent; color: #fff; font-size: 22px; line-height: 1; cursor: pointer; }
 .portal-logo { width: 25px; height: 25px; display: grid; place-items: center; border: 2px solid var(--accent); border-radius: 50%; color: var(--accent); font-size: 8px; font-weight: 800; }
@@ -143,7 +143,7 @@ button, input, select, textarea { font: inherit; }
 .nu-docs-intro p { color: var(--ink-soft); margin: 0; font-size: 15px; }
 .portal-kicker { color: var(--primary); font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .portal-notification { position: relative; }
-.portal-notification i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); top: -2px; right: -4px; border: 1px solid #202020; }
+.portal-notification i { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); top: -2px; right: -4px; border: 1px solid var(--primary); }
 .portal-feature-card { min-height: 142px; padding: 21px 18px; }
 .portal-feature-card h2 { color: var(--primary); font-size: 15px; font-weight: 700; }
 .request-layout { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(290px, .75fr); gap: 22px; }
@@ -308,6 +308,69 @@ button, input, select, textarea { font: inherit; }
 .admin-login-link { align-self: center; color: #777; font-size: 11px; text-decoration: underline; text-underline-offset: 3px; }
 .admin-login-link:hover, .admin-login-link:focus-visible { color: var(--primary-dark); }
 
+.registrar-portal { background: #fafafa; color: #303030; }
+.registrar-header { min-height: 50px; padding: 0 18px; }
+.registrar-brand { display: flex; align-items: center; gap: 10px; color: #f8f8f8; }
+.registrar-brand strong { display: block; font-size: 13px; }
+.registrar-brand small { display: block; color: #c6c9ce; font-size: 9px; letter-spacing: .1em; margin-top: 2px; }
+.registrar-header .portal-account { gap: 12px; }
+.registrar-header .portal-account > span:first-child { color: #d7dadd; font-size: 12px; }
+.registrar-logout { border: 1px solid #696969; background: transparent; color: #f8f8f8; padding: 6px 10px; font-size: 11px; cursor: pointer; }
+.registrar-logout:hover, .registrar-logout:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
+.registrar-shell { display: flex; flex: 1; min-width: 0; }
+.registrar-sidebar { width: 218px; flex: 0 0 218px; padding: 24px 14px; background: var(--primary); border-right: 1px solid #454e9a; }
+.registrar-sidebar nav { display: grid; gap: 4px; }
+.registrar-nav-link { display: flex; align-items: center; gap: 10px; padding: 11px 12px; color: #d7dadd; font-size: 13px; border-left: 3px solid transparent; }
+.registrar-nav-link span { width: 18px; color: var(--accent); text-align: center; }
+.registrar-nav-link:hover, .registrar-nav-link:focus-visible { background: var(--primary-dark); border-left-color: var(--accent); color: #fff; outline: none; }
+.registrar-main { width: min(1120px, 100%); min-width: 0; margin: 0 auto; padding: 32px clamp(20px, 4vw, 58px) 44px; }
+.registrar-breadcrumb { margin-bottom: 15px; }
+.registrar-breadcrumb span { display: flex; align-items: center; gap: 12px; }
+.registrar-main .topbar { align-items: flex-start; border-top: 1px solid #e1e3e8; border-bottom: 1px solid #e1e3e8; padding: 23px 0 20px; margin-bottom: 24px; }
+.registrar-main .page-title { color: var(--primary-dark); font-size: 34px; letter-spacing: 0; }
+.registrar-main .topbar .muted { font-size: 14px; }
+.registrar-main .surface { border-radius: 8px; box-shadow: 0 2px 5px rgba(0, 0, 0, .08); }
+.registrar-main .stat { min-height: 110px; padding: 17px; }
+.registrar-main .stat-number { color: var(--primary); font-size: 28px; margin: 11px 0 2px; }
+.registrar-main .section-heading { margin: 28px 0 13px; }
+.registrar-main .section-heading h2 { color: var(--primary); font-size: 16px; }
+.registrar-main .history-toolbar { border-radius: 8px; padding: 11px; }
+.registrar-main .toolbar-search { border-color: #cfcfcf; border-radius: 6px; padding: 9px 10px; }
+.registrar-main .history-toolbar select { border-color: #cfcfcf; border-radius: 6px; font-size: 12px; }
+.registrar-main .data-table { font-size: 12px; }
+.registrar-main .data-table th { color: #777; font-size: 10px; }
+.registrar-main .data-table th, .registrar-main .data-table td { padding: 14px 16px; }
+.registrar-main .data-table td strong { color: var(--primary); }
+.registrar-main .btn { border-radius: 6px; padding: 10px 15px; font-size: 12px; }
+.registrar-main .review-layout { gap: 20px; }
+.registrar-main .review-grid { gap: 18px; }
+.registrar-main .section-label { color: var(--primary); font-size: 11px; }
+.registrar-main .review-card { margin-top: 16px; }
+.registrar-main .file-row { border-color: #e8e8e8; }
+.registrar-main .action-stack { border-color: #e1e3e8; }
+.registrar-main .btn-success { background: #3f9b63; }
+.registrar-main .btn-danger { border: 1px solid #e7c4bf; }
+
+@media (max-width: 760px) {
+  .registrar-header { padding: 0 12px; }
+  .registrar-header .portal-account > span:first-child { display: none; }
+  .registrar-shell { display: block; }
+  .registrar-sidebar { width: 100%; padding: 10px 12px; }
+  .registrar-sidebar nav { display: flex; overflow-x: auto; }
+  .registrar-nav-link { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; }
+  .registrar-nav-link:hover, .registrar-nav-link:focus-visible { border-bottom-color: var(--accent); }
+  .registrar-main { padding: 24px 18px 34px; }
+}
+
+@media (max-width: 520px) {
+  .registrar-main .topbar { padding-top: 19px; }
+  .registrar-main .page-title { font-size: 30px; }
+  .registrar-main .history-toolbar { display: block; }
+  .registrar-main .history-toolbar select { width: 100%; margin-top: 9px; }
+  .registrar-main .registrar-table { min-width: 700px; }
+  .registrar-main .review-grid { grid-template-columns: 1fr; }
+}
+
 .student-dashboard-actions { display: flex; align-items: center; gap: 12px; }
 .portal-logout { border: 1px solid #cfcfcf; background: #fff; color: #555; padding: 5px 10px; font-size: 11px; cursor: pointer; }
 .portal-logout:hover, .portal-logout:focus-visible { border-color: var(--primary); color: var(--primary-dark); outline: none; }
@@ -317,11 +380,11 @@ button, input, select, textarea { font: inherit; }
 
 .portal-home-registrar { background: #fafafa; color: #303030; }
 .portal-home-registrar .app-shell { background: #fafafa; }
-.portal-home-registrar .sidebar { background: #202020; border-right: 1px solid #383838; padding: 22px 16px; }
+.portal-home-registrar .sidebar { background: var(--primary); border-right: 1px solid #454e9a; padding: 22px 16px; }
 .portal-home-registrar .sidebar-brand { margin-bottom: 34px; }
 .portal-home-registrar .brand-mark { border-radius: 50%; width: 32px; height: 32px; }
 .portal-home-registrar .sidebar-link { border-radius: 0; color: #d7dadd; font-size: 13px; padding: 10px 12px; }
-.portal-home-registrar .sidebar-link:hover, .portal-home-registrar .sidebar-link.active { background: #353535; color: #fff; }
+.portal-home-registrar .sidebar-link:hover, .portal-home-registrar .sidebar-link.active { background: var(--primary-dark); color: #fff; }
 .portal-home-registrar .sidebar-icon { color: var(--accent); }
 .portal-home-registrar .sidebar-exit { border-top-color: #4a4a4a; }
 .portal-home-registrar .main-content { width: min(1100px, 100%); margin: 0 auto; padding: 32px clamp(20px, 4vw, 54px) 44px; }
