@@ -5,7 +5,6 @@ const documentFeatures = [
   { title: "Request Documents", description: "Submit a request for official university documents.", icon: "▤", href: "/student/request" },
   { title: "Track Request", description: "Check the current status of your submitted document requests.", icon: "◷", href: "/student/track" },
   { title: "Request History", description: "View your previous document requests and completed requests.", icon: "☷", href: "/student/history" },
-  { title: "Registrar Portal", description: "Access document processing and registrar functions.", icon: "▣", href: "/registrar/dashboard" },
 ];
 
 export default function NuDocsPage() {
