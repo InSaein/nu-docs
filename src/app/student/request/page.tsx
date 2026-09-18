@@ -1,6 +1,56 @@
+"use client";
+
 import Link from "next/link";
-import { AppShell } from "@/components/app-shell";
+import { useState } from "react";
+import { AppShell, Breadcrumb, PageHeader, StatusPill } from "@/components/app-shell";
+import { createDocumentRequest } from "@/lib/server/requests";
+
+const documents = [
+  { name: "Transcript of Records", detail: "Official record of your academic performance", fee: "₱150.00", icon: "▤" },
+  { name: "Certificate of Registration", detail: "Proof of your current course registration", fee: "₱50.00", icon: "▧" },
+  { name: "Certificate of Enrollment", detail: "Proof that you are currently enrolled", fee: "₱50.00", icon: "▥" },
+];
+
+const documentTypes = {
+  "Transcript of Records": "TOR",
+  "Certificate of Registration": "COR",
+  "Certificate of Enrollment": "CERTIFICATE_OF_ENROLLMENT",
+} as const;
+
+const TEMPORARY_STUDENT_ID = "TEMP-STUDENT-ID";
 
 export default function RequestPage() {
-  return <AppShell><header className="topbar"><div><span className="eyebrow">Student services / New request</span><h1 className="display-font page-title">Request a document</h1><p className="muted">Tell us what you need and we will take care of the rest.</p></div></header><div className="grid-2"><section className="surface pad"><h2 style={{ marginTop: 0, fontSize: 19 }}>1. Choose your document</h2><div className="choice-grid"><label className="choice"><input type="radio" name="document" defaultChecked /><span><strong>Transcript of Records</strong><span>Official record of your academic performance · ₱150.00</span></span></label><label className="choice"><input type="radio" name="document" /><span><strong>Certificate of Registration</strong><span>Proof of your current course registration · ₱50.00</span></span></label><label className="choice"><input type="radio" name="document" /><span><strong>Certificate of Enrollment</strong><span>Proof that you are currently enrolled · ₱50.00</span></span></label></div><h2 style={{ fontSize: 19, marginTop: 30 }}>2. Request details</h2><div className="field"><label htmlFor="purpose">Purpose of request</label><textarea id="purpose" placeholder="e.g. For scholarship application"></textarea></div><div className="field"><label htmlFor="copies">Number of copies</label><select id="copies" defaultValue="1"><option>1 copy</option><option>2 copies</option><option>3 copies</option></select></div></section><section><div className="surface pad"><h2 style={{ marginTop: 0, fontSize: 19 }}>3. Requirements</h2><p className="muted" style={{ fontSize: 13, lineHeight: 1.6 }}>Upload a clear image or PDF of each required document.</p><div className="field"><label htmlFor="school-id">School ID</label><input id="school-id" type="file" /></div><div className="field"><label htmlFor="authorization">Authorization letter <span className="muted">(optional)</span></label><input id="authorization" type="file" /></div><div className="notice" style={{ marginTop: 22 }}>Your request will be reviewed by the Registrar’s Office within 2–3 working days.</div><Link className="btn btn-primary" href="/student/track" style={{ width: "100%", marginTop: 22 }}>Submit request →</Link></div><Link href="/student/dashboard" className="link" style={{ display: "inline-block", marginTop: 18 }}>← Cancel and return</Link></section></div></AppShell>;
+  const [selected, setSelected] = useState(documents[0].name);
+  const [submitted, setSubmitted] = useState(false);
+  const [requestNumber, setRequestNumber] = useState("");
+  const [submittedAt, setSubmittedAt] = useState("");
+  const [submissionError, setSubmissionError] = useState("");
+  const document = documents.find((item) => item.name === selected) ?? documents[0];
+  const submitRequest = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setSubmissionError("");
+    const formData = new FormData(event.currentTarget);
+    const purpose = String(formData.get("purpose") ?? "");
+
+    try {
+      const request = await createDocumentRequest({
+        documentType: documentTypes[selected as keyof typeof documentTypes],
+        purpose,
+        studentId: TEMPORARY_STUDENT_ID,
+      });
+      setRequestNumber(request.requestNumber);
+      setSubmittedAt(request.createdAt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
+      setSubmitted(true);
+    } catch (error) {
+      console.error("[NU-Docs] Failed to create document request", {
+        studentId: TEMPORARY_STUDENT_ID,
+        documentType: documentTypes[selected as keyof typeof documentTypes],
+        error,
+      });
+      setSubmissionError("We could not submit your request. Please try again.");
+    }
+  };
+  return <AppShell><Breadcrumb items={["NU-Docs", "Request Documents"]} /><PageHeader eyebrow="NU-Docs / New request" title="Request Documents" description="Select a document and submit your request online." />
+    {submitted ? <section className="success-panel"><span className="success-icon">✓</span><span className="eyebrow">Request submitted</span><h2>Your request is on its way.</h2><p>Keep this reference number for tracking and future follow-up.</p><div className="request-reference">{requestNumber}</div><div className="summary-grid"><div><span className="muted">Document</span><strong>{document.name}</strong></div><div><span className="muted">Date submitted</span><strong>{submittedAt}</strong></div><div><span className="muted">Current status</span><strong><StatusPill tone="Submitted">Submitted</StatusPill></strong></div></div><div className="notice notice-blue"><strong>Next steps</strong><br />The Registrar&apos;s Office will review your request and notify you when there is an update.</div><div className="button-row"><Link className="btn btn-primary" href="/student/track">Track this request</Link><Link className="btn btn-secondary" href="/student/nu-docs">Back to NU-Docs</Link></div></section> : <form className="request-layout" onSubmit={submitRequest}><section className="surface pad"><div className="form-heading"><span className="form-step">01</span><div><h2>Choose your document</h2><p className="muted">Select one document type to continue.</p></div></div><div className="document-choices">{documents.map((item) => <label className={`document-choice ${selected === item.name ? "selected" : ""}`} key={item.name}><input type="radio" name="document" checked={selected === item.name} onChange={() => setSelected(item.name)} /><span className="document-icon">{item.icon}</span><span><strong>{item.name}</strong><small>{item.detail}</small></span><em>{item.fee}</em></label>)}</div><div className="form-heading second"><span className="form-step">02</span><div><h2>Request details</h2><p className="muted">Tell us how you will use this document.</p></div></div><div className="field"><label htmlFor="purpose">Purpose of request <b>*</b></label><textarea id="purpose" name="purpose" required placeholder="e.g. For scholarship application" /></div><div className="field"><label htmlFor="copies">Number of copies <b>*</b></label><select id="copies" name="copies" defaultValue="1"><option value="1">1 copy</option><option value="2">2 copies</option><option value="3">3 copies</option></select></div>{submissionError && <p className="notice notice-blue">{submissionError}</p>}</section><aside className="request-aside"><div className="surface pad"><div className="form-heading"><span className="form-step">03</span><div><h2>Student information</h2><p className="muted">We&apos;ll use your portal record.</p></div></div><dl className="details-list"><div><dt>Student ID</dt><dd>2023-161838</dd></div><div><dt>Student name</dt><dd>Hernandez, Saein Marc Castro</dd></div><div><dt>Program</dt><dd>BS Computer Engineering</dd></div></dl><div className="notice"><strong>Before you submit</strong><br />Make sure your purpose is specific. Processing time starts after your request is reviewed.</div><div className="button-row"><button className="btn btn-primary" type="submit">Submit Request</button><Link className="btn btn-secondary" href="/student/nu-docs">Back</Link></div></div></aside></form>}
+  </AppShell>;
 }

@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  STUDENT
+  ADMIN
+}
+
+enum RequestStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  PROCESSING
+  READY_FOR_RELEASE
+  COMPLETED
+  REJECTED
+}
+
+enum DocumentType {
+  TOR
+  COR
+  CERTIFICATE_OF_ENROLLMENT
+  CERTIFIED_TRUE_COPY_OF_GRADES
+}
+
+enum NotificationType {
+  REQUEST_SUBMITTED
+  STATUS_UPDATED
+}
+
+model User {
+  id          String   @id @default(cuid())
+  studentNumber String? @unique
+  name        String
+  email       String   @unique
+  password    String
+  role        UserRole @default(STUDENT)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  requests    DocumentRequest[]
+  notifications Notification[]
+}
+
+model DocumentRequest {
+  id              String        @id @default(cuid())
+  requestNumber   String        @unique
+  documentType    DocumentType
+  purpose         String
+  status          RequestStatus @default(SUBMITTED)
+  remarks         String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  completedAt     DateTime?
+
+  studentId       String
+  student         User          @relation(fields: [studentId], references: [id])
+
+  uploadedDocuments UploadedDocument[]
+  payment           Payment?
+  statusHistory     RequestStatusHistory[]
+}
+
+model UploadedDocument {
+  id          String   @id @default(cuid())
+  fileName    String
+  fileUrl     String
+  fileType    String
+  fileSize    Int
+  uploadedAt  DateTime @default(now())
+
+  requestId   String
+  request    DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id              String   @id @default(cuid())
+  transactionReference String?
+  proofFileUrl    String?
+  amount          Decimal? @db.Decimal(10, 2)
+  verified        Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  requestId       String   @unique
+  request         DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model RequestStatusHistory {
+  id          String        @id @default(cuid())
+  status      RequestStatus
+  remarks     String?
+  createdAt   DateTime      @default(now())
+
+  requestId   String
+  request     DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id          String           @id @default(cuid())
+  type        NotificationType
+  title       String
+  message     String
+  isRead      Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+
+  userId      String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

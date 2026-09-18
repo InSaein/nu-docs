@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { PortalFooter, PortalHeader } from "@/components/app-shell";
+import { Breadcrumb, PortalFooter, PortalHeader } from "@/components/app-shell";
 
 const documentFeatures = [
-  { title: "Request Documents", description: "Request your official school documents online.", icon: "▤", href: "/student/request" },
-  { title: "Track Request", description: "Track the status of your submitted document requests.", icon: "◷", href: "/student/track" },
-  { title: "Request History", description: "View your previous document requests and their status.", icon: "☷", href: "/student/history" },
-  { title: "Notifications", description: "View updates and important notifications about your requests.", icon: "●", href: "/student/notifications" },
+  { title: "Request Documents", description: "Submit a request for official university documents.", icon: "▤", href: "/student/request" },
+  { title: "Track Request", description: "Check the current status of your submitted document requests.", icon: "◷", href: "/student/track" },
+  { title: "Request History", description: "View your previous document requests and completed requests.", icon: "☷", href: "/student/history" },
+  { title: "Registrar Portal", description: "Access document processing and registrar functions.", icon: "▣", href: "/registrar/dashboard" },
 ];
 
 export default function NuDocsPage() {
@@ -13,9 +13,8 @@ export default function NuDocsPage() {
     <div className="portal-home">
       <PortalHeader />
       <main className="portal-main portal-landing-main">
-        <div className="portal-toolbar portal-landing-toolbar">
-          <Link href="/student/dashboard" className="portal-breadcrumb"><span className="portal-doc-breadcrumb-icon" aria-hidden="true">▤</span>Home <span className="portal-chevron">&gt;</span> NU-Docs</Link>
-        </div>
+        <Breadcrumb items={["NU-Docs"]} />
+        <section className="nu-docs-intro"><span className="portal-kicker">Student services / Online requests</span><h1>NU-Docs</h1><p>Request, track, and manage your official university documents online.</p></section>
         <section className="portal-feature-grid portal-doc-grid" aria-label="NU-Docs services">
           {documentFeatures.map((feature) => (
             <Link href={feature.href} className="portal-feature-card portal-feature-link" key={feature.title}>
