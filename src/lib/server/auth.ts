@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createAuthSession, verifyPassword } from "@/lib/auth";
+import { clearAuthSession, createAuthSession, verifyPassword } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export type LoginState = {
@@ -9,6 +9,11 @@ export type LoginState = {
 };
 
 const invalidCredentialsMessage = "Invalid student number or password.";
+
+export async function logout() {
+  await clearAuthSession();
+  redirect("/login");
+}
 
 export async function login(previousState: LoginState, formData: FormData): Promise<LoginState> {
   void previousState;

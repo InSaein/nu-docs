@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { logout } from "@/lib/server/auth";
 
 type Role = "student" | "registrar";
 type NavItem = { icon: string; label: string; href: string };
@@ -15,7 +16,7 @@ const registrarLinks: NavItem[] = [{ icon: "⌂", label: "Dashboard", href: "/re
 
 export function AppShell({ children, role = "student" }: { children: React.ReactNode; role?: Role }) {
   const links = role === "registrar" ? registrarLinks : studentLinks;
-  return <div className="portal-home"><PortalHeader role={role} /><div className="app-shell"><aside className="sidebar"><Link href={role === "registrar" ? "/registrar/dashboard" : "/student/dashboard"} className="sidebar-brand"><span className="brand-mark">N</span><span><strong>NU-Docs</strong><small>{role === "registrar" ? "REGISTRAR PORTAL" : "STUDENT PORTAL"}</small></span></Link><nav>{links.map((item) => <Link className="sidebar-link" href={item.href} key={item.href}><span className="sidebar-icon">{item.icon}</span><span>{item.label}</span></Link>)}</nav><div className="sidebar-exit"><Link className="sidebar-link" href="/login"><span className="sidebar-icon">↪</span><span>Sign out</span></Link></div></aside><main className="main-content">{children}</main></div><PortalFooter /></div>;
+  return <div className={`portal-home portal-home-${role}`}><PortalHeader role={role} /><div className="app-shell"><aside className="sidebar"><Link href={role === "registrar" ? "/registrar/dashboard" : "/student/dashboard"} className="sidebar-brand"><span className="brand-mark">N</span><span><strong>NU-Docs</strong><small>{role === "registrar" ? "REGISTRAR PORTAL" : "STUDENT PORTAL"}</small></span></Link><nav>{links.map((item) => <Link className="sidebar-link" href={item.href} key={item.href}><span className="sidebar-icon">{item.icon}</span><span>{item.label}</span></Link>)}</nav><div className="sidebar-exit"><form action={logout}><button className="sidebar-link sidebar-logout" type="submit"><span className="sidebar-icon">↪</span><span>Sign out</span></button></form></div></aside><main className="main-content">{children}</main></div><PortalFooter /></div>;
 }
 
 export function StatusPill({ children, tone = "processing" }: { children: React.ReactNode; tone?: string }) { return <span className={`status status-${tone.toLowerCase().replaceAll(" ", "-")}`}>{children}</span>; }

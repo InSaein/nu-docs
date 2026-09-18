@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PortalFooter, PortalHeader } from "@/components/app-shell";
+import { logout } from "@/lib/server/auth";
 
 const featureCards = [
   { title: "Documents & Manuals", description: "Collection of documents, forms and manuals for administration, students, faculty, and staff.", icon: "▰" },
@@ -16,7 +17,7 @@ export default function StudentDashboard() {
         <p className="portal-welcome">Good afternoon, welcome to your control center!</p>
         <div className="portal-toolbar">
           <Link href="/student/dashboard" className="portal-breadcrumb"><span className="portal-home-icon" aria-hidden="true">⌂</span>Home</Link>
-          <label className="portal-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search..." aria-label="Search" /></label>
+          <div className="student-dashboard-actions"><label className="portal-search"><span aria-hidden="true">⌕</span><input type="search" placeholder="Search..." aria-label="Search" /></label><form action={logout}><button className="portal-logout" type="submit">Log Out</button></form></div>
         </div>
 
         <section className="portal-feature-grid" aria-label="Student portal services">
