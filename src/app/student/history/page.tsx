@@ -1,8 +1,8 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AppShell, Breadcrumb, PageHeader, StatusPill } from "@/components/app-shell";
+import { getCurrentSession } from "@/lib/auth";
 import { getRequestHistoryForStudent } from "@/lib/server/requests";
-
-const TEMPORARY_STUDENT_ID = "TEMP-STUDENT-ID";
 
 const documentLabels: Record<string, string> = {
   TOR: "Transcript of Records",
@@ -26,7 +26,11 @@ function formatDate(date: Date) {
 
 export default async function HistoryPage({ searchParams }: { searchParams: Promise<{ query?: string; status?: string }> }) {
   const { query = "", status = "All statuses" } = await searchParams;
-  const requests = await getRequestHistoryForStudent(TEMPORARY_STUDENT_ID);
+  const session = await getCurrentSession();
+  if (!session || session.role !== "STUDENT") {
+    redirect("/login");
+  }
+  const requests = await getRequestHistoryForStudent(session.userId);
   const history = requests.map((request) => ({
     id: request.requestNumber,
     document: documentLabels[request.documentType] ?? request.documentType,

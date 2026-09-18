@@ -2,6 +2,8 @@
 
 import { randomUUID } from "node:crypto";
 import { DocumentType, NotificationType, RequestStatus } from "@prisma/client";
+import { redirect } from "next/navigation";
+import { getCurrentSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 const studentSelect = {
@@ -46,15 +48,28 @@ export async function getRequestHistoryForStudent(studentId: string) {
   });
 }
 
+export async function getAuthenticatedDocumentRequestByRequestNumber(requestNumber: string) {
+  const session = await getCurrentSession();
+  if (!session || session.role !== "STUDENT") {
+    redirect("/login");
+  }
+
+  const request = await getDocumentRequestByRequestNumber(requestNumber);
+  return request?.studentId === session.userId ? request : null;
+}
+
 export async function createDocumentRequest({
   documentType,
   purpose,
-  studentId,
 }: {
   documentType: DocumentType;
   purpose: string;
-  studentId: string;
 }) {
+  const session = await getCurrentSession();
+  if (!session || session.role !== "STUDENT") {
+    redirect("/login");
+  }
+
   const requestNumber = `NUDOC-${new Date().getFullYear()}-${randomUUID().replaceAll("-", "").slice(0, 8).toUpperCase()}`;
 
   return prisma.$transaction(async (transaction) => {
@@ -63,7 +78,7 @@ export async function createDocumentRequest({
         requestNumber,
         documentType,
         purpose,
-        studentId,
+        studentId: session.userId,
         status: RequestStatus.SUBMITTED,
       },
     });
@@ -73,7 +88,7 @@ export async function createDocumentRequest({
         type: NotificationType.REQUEST_SUBMITTED,
         title: "Request submitted",
         message: `Your request ${request.requestNumber} has been submitted for review.`,
-        userId: studentId,
+        userId: session.userId,
       },
     });
 

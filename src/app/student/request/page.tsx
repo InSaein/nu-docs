@@ -17,8 +17,6 @@ const documentTypes = {
   "Certificate of Enrollment": "CERTIFICATE_OF_ENROLLMENT",
 } as const;
 
-const TEMPORARY_STUDENT_ID = "TEMP-STUDENT-ID";
-
 export default function RequestPage() {
   const [selected, setSelected] = useState(documents[0].name);
   const [submitted, setSubmitted] = useState(false);
@@ -36,14 +34,12 @@ export default function RequestPage() {
       const request = await createDocumentRequest({
         documentType: documentTypes[selected as keyof typeof documentTypes],
         purpose,
-        studentId: TEMPORARY_STUDENT_ID,
       });
       setRequestNumber(request.requestNumber);
       setSubmittedAt(request.createdAt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
       setSubmitted(true);
     } catch (error) {
       console.error("[NU-Docs] Failed to create document request", {
-        studentId: TEMPORARY_STUDENT_ID,
         documentType: documentTypes[selected as keyof typeof documentTypes],
         error,
       });

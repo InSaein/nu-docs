@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AppShell, Breadcrumb, PageHeader, StatusPill } from "@/components/app-shell";
-import { getDocumentRequestByRequestNumber } from "@/lib/server/requests";
+import { getAuthenticatedDocumentRequestByRequestNumber } from "@/lib/server/requests";
 
 const stages = ["Submitted", "Under Review", "Processing", "Ready for Release", "Completed"];
 
@@ -26,7 +26,7 @@ const initialReference = "NUDOC-2026-18CA844";
 
 export default function TrackPage() {
   const [reference, setReference] = useState(initialReference);
-  const [request, setRequest] = useState<Awaited<ReturnType<typeof getDocumentRequestByRequestNumber>>>(null);
+  const [request, setRequest] = useState<Awaited<ReturnType<typeof getAuthenticatedDocumentRequestByRequestNumber>>>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
@@ -40,7 +40,7 @@ export default function TrackPage() {
       setNotFound(true);
       return;
     }
-    const databaseRequest = await getDocumentRequestByRequestNumber(normalizedReference);
+    const databaseRequest = await getAuthenticatedDocumentRequestByRequestNumber(normalizedReference);
     setRequest(databaseRequest);
     setNotFound(!databaseRequest);
     setLoading(false);
