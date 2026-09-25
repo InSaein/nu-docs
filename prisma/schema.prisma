@@ -10,6 +10,10 @@ model User {
   id            String            @id @default(cuid())
   studentNumber String?           @unique
   name          String
+  firstName     String?
+  middleName    String?
+  lastName      String?
+  course        String?
   email         String            @unique
   password      String
   role          UserRole          @default(STUDENT)

@@ -1,0 +1,13 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState } from "react";
+import { registerStudent, type RegistrationState } from "@/lib/server/registration";
+
+const initialState: RegistrationState = {};
+
+export default function RegisterPage() {
+  const [state, formAction] = useActionState(registerStudent, initialState);
+
+  return <main className="hero"><section className="hero-copy"><Link href="/login" style={{ fontWeight: 800, color: "var(--primary-dark)" }}>← Back to sign in</Link><span className="eyebrow" style={{ marginTop: 80 }}>NU-Docs student access</span><h1 className="display-font hero-title">Start your<br />next step.</h1><p>Create a student account to request and track your official university documents.</p></section><section className="login-panel"><form className="surface login-card registration-card" action={formAction}><span className="brand-mark">N</span><h1 className="display-font">Create your account</h1><p className="muted" style={{ marginBottom: 24 }}>For National University students.</p>{state.error && <p className="notice notice-blue" role="alert">{state.error}</p>}<div className="registration-name-grid"><div className="field"><label htmlFor="first-name">First name</label><input id="first-name" name="firstName" required autoComplete="given-name" /></div><div className="field"><label htmlFor="middle-name">Middle name</label><input id="middle-name" name="middleName" autoComplete="additional-name" /></div><div className="field"><label htmlFor="last-name">Last name</label><input id="last-name" name="lastName" required autoComplete="family-name" /></div></div><div className="field"><label htmlFor="course">Course</label><input id="course" name="course" required autoComplete="organization-title" /></div><div className="field"><label htmlFor="email">NU email</label><input id="email" name="email" type="email" required autoComplete="email" /></div><div className="field"><label htmlFor="student-number">Student number</label><input id="student-number" name="studentNumber" required autoComplete="username" /></div><div className="field"><label htmlFor="password">Password</label><input id="password" name="password" type="password" required autoComplete="new-password" /></div><div className="field"><label htmlFor="confirm-password">Confirm password</label><input id="confirm-password" name="confirmPassword" type="password" required autoComplete="new-password" /></div><button className="btn btn-primary" type="submit" style={{ width: "100%", marginTop: 6 }}>Create student account →</button><p className="muted" style={{ textAlign: "center", fontSize: 12, marginTop: 18 }}>Already have an account? <Link className="link" href="/login">Sign in</Link></p></form></section></main>;
+}

@@ -8,6 +8,7 @@ async function main() {
   const name = process.env.DEMO_ADMIN_NAME;
   const email = process.env.DEMO_ADMIN_EMAIL;
   const password = process.env.DEMO_ADMIN_PASSWORD;
+  const nameParts = name?.trim().split(/\s+/) ?? [];
 
   if (!studentNumber || !name || !email || !password) {
     throw new Error("DEMO_ADMIN_STUDENT_NUMBER, DEMO_ADMIN_NAME, DEMO_ADMIN_EMAIL, and DEMO_ADMIN_PASSWORD are required.");
@@ -26,12 +27,20 @@ async function main() {
       create: {
         studentNumber,
         name,
+        firstName: nameParts[0] ?? null,
+        middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : null,
+        lastName: nameParts.length > 1 ? nameParts.slice(-1)[0] : null,
+        course: null,
         email,
         password: passwordHash,
         role: UserRole.ADMIN,
       },
       update: {
         name,
+        firstName: nameParts[0] ?? null,
+        middleName: nameParts.length > 2 ? nameParts.slice(1, -1).join(" ") : null,
+        lastName: nameParts.length > 1 ? nameParts.slice(-1)[0] : null,
+        course: null,
         email,
         password: passwordHash,
         role: UserRole.ADMIN,
