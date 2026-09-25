@@ -1,4 +1,17 @@
-import { AppShell } from "@/components/app-shell";
+import { redirect } from "next/navigation";
+import { PageHeader } from "@/components/app-shell";
+import { NotificationsList } from "@/components/notifications-list";
+import { StudentBreadcrumb, StudentPortalShell } from "@/components/student-portal-shell";
+import { getCurrentSession } from "@/lib/auth";
+import { getNotificationsForUser, markNotificationAsRead } from "@/lib/server/notifications";
 
-const notifications = [{ title: "Your request is being reviewed", body: "Request NU-2026-00421 has moved to the review stage.", date: "Today, 10:12 AM", unread: true }, { title: "Payment instructions are ready", body: "Payment details for NU-2026-00388 are now available.", date: "Aug 22, 2026", unread: true }, { title: "Request released", body: "Your Certificate of Registration is ready for pick-up at the Registrar’s Office.", date: "Jul 18, 2026", unread: false }];
-export default function NotificationsPage() { return <AppShell><header className="topbar"><div><span className="eyebrow">Student services</span><h1 className="display-font page-title">Notifications</h1><p className="muted">Updates about your requests and document releases.</p></div></header><div className="surface pad"><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #edf1ee", paddingBottom: 17 }}><strong>Recent updates</strong><span className="muted" style={{ fontSize: 12 }}>2 unread</span></div>{notifications.map((notification) => <article className="notification" key={notification.title}><span className="notification-dot" style={{ opacity: notification.unread ? 1 : 0 }}></span><div style={{ flex: 1 }}><strong style={{ display: "block", fontSize: 14 }}>{notification.title}</strong><p className="muted" style={{ fontSize: 13, margin: "6px 0" }}>{notification.body}</p><small className="muted">{notification.date}</small></div></article>)}</div></AppShell>; }
+export default async function NotificationsPage() {
+  const session = await getCurrentSession();
+  if (!session || session.role !== "STUDENT") {
+    redirect("/login");
+  }
+
+  const notifications = await getNotificationsForUser(session.userId);
+
+  return <StudentPortalShell><StudentBreadcrumb currentPage="Notifications" /><PageHeader eyebrow="NU-Docs / Student services" title="Notifications" description="Updates about your requests and document releases." /><NotificationsList notifications={notifications} markNotificationAsRead={markNotificationAsRead} /></StudentPortalShell>;
+}

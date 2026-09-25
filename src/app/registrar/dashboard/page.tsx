@@ -4,14 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { RegistrarBreadcrumb, RegistrarPortalShell } from "@/components/registrar-portal-shell";
+import { documentLabels } from "@/lib/document-pricing";
 import { getDocumentRequests } from "@/lib/server/requests";
-
-const documentLabels: Record<string, string> = {
-  TOR: "Transcript of Records",
-  COR: "Certificate of Registration",
-  CERTIFICATE_OF_ENROLLMENT: "Certificate of Enrollment",
-  CERTIFIED_TRUE_COPY_OF_GRADES: "Certified True Copy of Grades",
-};
 
 const statusLabels: Record<string, string> = {
   SUBMITTED: "Submitted",
@@ -42,8 +36,8 @@ export default function RegistrarDashboard() {
       setRequests(databaseRequests.map((request) => ({
         id: request.requestNumber,
         student: request.student.name,
-        document: documentLabels[request.documentType] ?? request.documentType,
-        submitted: request.createdAt.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+        document: request.requestItems.length ? request.requestItems.map((item) => `${documentLabels[item.documentType]} — ${item.quantity}`).join(", ") : documentLabels[request.documentType] ?? request.documentType,
+        submitted: new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
         status: statusLabels[request.status] ?? request.status,
       })));
     });

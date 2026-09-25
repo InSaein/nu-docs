@@ -6,6 +6,100 @@ datasource db {
   provider = "postgresql"
 }
 
+model User {
+  id            String            @id @default(cuid())
+  studentNumber String?           @unique
+  name          String
+  email         String            @unique
+  password      String
+  role          UserRole          @default(STUDENT)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  requests      DocumentRequest[]
+  notifications Notification[]
+}
+
+model DocumentRequest {
+  id                String                 @id @default(cuid())
+  requestNumber     String                 @unique
+  documentType      DocumentType
+  purpose           String
+  status            RequestStatus          @default(SUBMITTED)
+  remarks           String?
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
+  completedAt       DateTime?
+  studentId         String
+  student           User                   @relation(fields: [studentId], references: [id])
+  payment           Payment?
+  requestItems      RequestItem[]
+  statusHistory     RequestStatusHistory[]
+  uploadedDocuments UploadedDocument[]
+}
+
+model RequestItem {
+  id           String          @id @default(cuid())
+  requestId    String
+  documentType DocumentType
+  quantity     Int
+  unitPrice    Decimal         @db.Decimal(10, 2)
+  subtotal     Decimal         @db.Decimal(10, 2)
+  createdAt    DateTime        @default(now())
+  request      DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+}
+
+model UploadedDocument {
+  id         String          @id @default(cuid())
+  fileName   String
+  fileUrl    String
+  fileType   String
+  fileSize   Int
+  uploadedAt DateTime        @default(now())
+  requestId  String
+  request    DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model Payment {
+  id                   String          @id @default(cuid())
+  transactionReference String?
+  proofFileUrl         String?
+  amount               Decimal?        @db.Decimal(10, 2)
+  verified             Boolean         @default(false)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+  requestId            String          @unique
+  request              DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model RequestStatusHistory {
+  id        String          @id @default(cuid())
+  status    RequestStatus
+  remarks   String?
+  createdAt DateTime        @default(now())
+  requestId String
+  request   DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id            String           @id @default(cuid())
+  type          NotificationType
+  title         String
+  message       String
+  isRead        Boolean          @default(false)
+  createdAt     DateTime         @default(now())
+  userId        String
+  requestNumber String?
+  user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model playing_with_neon {
+  id    Int    @id @default(autoincrement())
+  name  String
+  value Float? @db.Real
+}
+
 enum UserRole {
   STUDENT
   ADMIN
@@ -30,84 +124,4 @@ enum DocumentType {
 enum NotificationType {
   REQUEST_SUBMITTED
   STATUS_UPDATED
-}
-
-model User {
-  id          String   @id @default(cuid())
-  studentNumber String? @unique
-  name        String
-  email       String   @unique
-  password    String
-  role        UserRole @default(STUDENT)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  requests    DocumentRequest[]
-  notifications Notification[]
-}
-
-model DocumentRequest {
-  id              String        @id @default(cuid())
-  requestNumber   String        @unique
-  documentType    DocumentType
-  purpose         String
-  status          RequestStatus @default(SUBMITTED)
-  remarks         String?
-  createdAt       DateTime      @default(now())
-  updatedAt       DateTime      @updatedAt
-  completedAt     DateTime?
-
-  studentId       String
-  student         User          @relation(fields: [studentId], references: [id])
-
-  uploadedDocuments UploadedDocument[]
-  payment           Payment?
-  statusHistory     RequestStatusHistory[]
-}
-
-model UploadedDocument {
-  id          String   @id @default(cuid())
-  fileName    String
-  fileUrl     String
-  fileType    String
-  fileSize    Int
-  uploadedAt  DateTime @default(now())
-
-  requestId   String
-  request    DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-}
-
-model Payment {
-  id              String   @id @default(cuid())
-  transactionReference String?
-  proofFileUrl    String?
-  amount          Decimal? @db.Decimal(10, 2)
-  verified        Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  requestId       String   @unique
-  request         DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-}
-
-model RequestStatusHistory {
-  id          String        @id @default(cuid())
-  status      RequestStatus
-  remarks     String?
-  createdAt   DateTime      @default(now())
-
-  requestId   String
-  request     DocumentRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
-}
-
-model Notification {
-  id          String           @id @default(cuid())
-  type        NotificationType
-  title       String
-  message     String
-  isRead      Boolean          @default(false)
-  createdAt   DateTime         @default(now())
-
-  userId      String
-  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

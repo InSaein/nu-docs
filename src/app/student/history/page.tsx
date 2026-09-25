@@ -1,16 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { PageHeader, StatusPill } from "@/components/app-shell";
+import { documentLabels } from "@/lib/document-pricing";
 import { StudentBreadcrumb, StudentPortalShell } from "@/components/student-portal-shell";
 import { getCurrentSession } from "@/lib/auth";
 import { getRequestHistoryForStudent } from "@/lib/server/requests";
-
-const documentLabels: Record<string, string> = {
-  TOR: "Transcript of Records",
-  COR: "Certificate of Registration",
-  CERTIFICATE_OF_ENROLLMENT: "Certificate of Enrollment",
-  CERTIFIED_TRUE_COPY_OF_GRADES: "Certified True Copy of Grades",
-};
 
 const statusLabels: Record<string, string> = {
   SUBMITTED: "Submitted",
@@ -21,8 +15,8 @@ const statusLabels: Record<string, string> = {
   REJECTED: "Rejected",
 };
 
-function formatDate(date: Date) {
-  return date.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+function formatDate(date: string) {
+  return new Date(date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
 export default async function HistoryPage({ searchParams }: { searchParams: Promise<{ query?: string; status?: string }> }) {
@@ -34,7 +28,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Prom
   const requests = await getRequestHistoryForStudent(session.userId);
   const history = requests.map((request) => ({
     id: request.requestNumber,
-    document: documentLabels[request.documentType] ?? request.documentType,
+    document: request.requestItems.length ? request.requestItems.map((item) => `${documentLabels[item.documentType]} — ${item.quantity}`).join(", ") : documentLabels[request.documentType] ?? request.documentType,
     date: formatDate(request.createdAt),
     status: statusLabels[request.status] ?? request.status,
     lastUpdated: formatDate(request.updatedAt),
