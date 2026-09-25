@@ -323,8 +323,11 @@ button, input, select, textarea { font: inherit; }
 .registrar-logout { border: 1px solid #696969; background: transparent; color: #f8f8f8; padding: 6px 10px; font-size: 11px; cursor: pointer; }
 .registrar-logout:hover, .registrar-logout:focus-visible { border-color: var(--accent); color: var(--accent); outline: none; }
 .registrar-shell { display: flex; flex: 1; min-width: 0; }
-.registrar-sidebar { width: 218px; flex: 0 0 218px; padding: 24px 14px; background: var(--primary); border-right: 1px solid #454e9a; }
+.registrar-sidebar { width: 218px; flex: 0 0 218px; display: flex; flex-direction: column; padding: 24px 14px; background: var(--primary); border-right: 1px solid #454e9a; }
 .registrar-sidebar nav { display: grid; gap: 4px; }
+.registrar-sidebar-logout { margin-top: auto; padding-top: 18px; border-top: 1px solid #5962a3; }
+.registrar-sidebar-logout button { width: 100%; border: 0; background: transparent; color: #d7d8ed; padding: 11px 12px; text-align: left; font-size: 13px; cursor: pointer; }
+.registrar-sidebar-logout button:hover, .registrar-sidebar-logout button:focus-visible { background: var(--primary-dark); color: #fff; outline: none; }
 .registrar-nav-link { display: flex; align-items: center; gap: 10px; padding: 11px 12px; color: #d7dadd; font-size: 13px; border-left: 3px solid transparent; }
 .registrar-nav-link span { width: 18px; color: var(--accent); text-align: center; }
 .registrar-nav-link:hover, .registrar-nav-link:focus-visible { background: var(--primary-dark); border-left-color: var(--accent); color: #fff; outline: none; }
@@ -355,6 +358,7 @@ button, input, select, textarea { font: inherit; }
 .registrar-main .action-stack { border-color: #e1e3e8; }
 .registrar-main .btn-success { background: #3f9b63; }
 .registrar-main .btn-danger { border: 1px solid #e7c4bf; }
+.inline-success { color: #267845; background: #e2f4e8; border-left: 3px solid #43aa6a; padding: 9px 11px; margin: 10px 0 14px; font-size: 12px; }
 
 @media (max-width: 760px) {
   .registrar-header { padding: 0 12px; }
@@ -364,6 +368,7 @@ button, input, select, textarea { font: inherit; }
   .registrar-sidebar nav { display: flex; overflow-x: auto; }
   .registrar-nav-link { flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; }
   .registrar-nav-link:hover, .registrar-nav-link:focus-visible { border-bottom-color: var(--accent); }
+  .registrar-sidebar-logout { display: block; padding: 8px 0 0; border-top: 0; }
   .registrar-main { padding: 24px 18px 34px; }
 }
 

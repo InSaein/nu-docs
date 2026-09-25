@@ -12,7 +12,7 @@ export function PortalHeader({ role = "student" }: { role?: Role }) {
 export function PortalFooter() { return <footer className="portal-footer"><span>National University © 2018 - 2026</span><Link href="/student/dashboard">Privacy Policy</Link></footer>; }
 
 const studentLinks: NavItem[] = [{ icon: "⌂", label: "Dashboard", href: "/student/dashboard" }, { icon: "+", label: "Request document", href: "/student/request" }, { icon: "#", label: "Track request", href: "/student/track" }, { icon: "≡", label: "Request history", href: "/student/history" }, { icon: "!", label: "Notifications", href: "/student/notifications" }];
-const registrarLinks: NavItem[] = [{ icon: "⌂", label: "Dashboard", href: "/registrar/dashboard" }, { icon: "▣", label: "Request review", href: "/registrar/requests/NU-2026-00421" }];
+const registrarLinks: NavItem[] = [{ icon: "⌂", label: "Dashboard", href: "/registrar/dashboard" }, { icon: "▣", label: "Request review", href: "/registrar/requests" }];
 
 export function AppShell({ children, role = "student" }: { children: React.ReactNode; role?: Role }) {
   const links = role === "registrar" ? registrarLinks : studentLinks;

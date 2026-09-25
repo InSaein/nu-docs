@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { StudentPortalHeader } from "@/components/student-portal-header";
 import { logout } from "@/lib/server/auth";
 import { PortalFooter } from "@/components/app-shell";
 
@@ -9,10 +10,6 @@ const studentLinks = [
   { icon: "≡", label: "Request history", href: "/student/history" },
   { icon: "!", label: "Notifications", href: "/student/notifications" },
 ];
-
-function StudentPortalHeader() {
-  return <header className="portal-header student-admin-header"><div className="portal-brand-group"><button className="portal-menu-button" type="button" aria-label="Open application menu">⠿</button><Link href="/student/dashboard" className="student-brand" aria-label="NU-Docs student home"><span className="portal-logo">NU</span><span><strong>NU-Docs</strong><small>STUDENT PORTAL</small></span></Link></div><div className="portal-account"><Link href="/student/notifications" className="portal-notification" aria-label="View notifications"><span aria-hidden="true">♟</span><i aria-label="Unread notifications" /></Link><span>Hi, Saein Marc</span><span className="portal-avatar" aria-hidden="true">SM</span></div></header>;
-}
 
 export function StudentBreadcrumb({ currentPage }: { currentPage: string }) {
   return <nav className="breadcrumb" aria-label="Breadcrumb"><Link href="/student/dashboard">Home</Link><span><b>›</b>{currentPage}</span></nav>;

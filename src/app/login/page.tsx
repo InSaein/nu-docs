@@ -2,13 +2,17 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useActionState } from "react";
+import { Suspense, useActionState } from "react";
 import { login, type LoginState } from "@/lib/server/auth";
 
 const initialState: LoginState = {};
 
-export default function LoginPage() {
+function LoginContent() {
   const [state, formAction] = useActionState(login, initialState);
   const registered = useSearchParams().get("registered") === "1";
-  return <main className="hero"><section className="hero-copy"><Link href="/" style={{ fontWeight: 800, color: "var(--primary-dark)" }}>← Back to NU-Docs</Link><span className="eyebrow" style={{ marginTop: 80 }}>Welcome back</span><h1 className="display-font hero-title">Your campus<br />is moving.</h1><p>Sign in to request documents and check your latest updates.</p></section><section className="login-panel"><form className="surface login-card" action={formAction}><span className="brand-mark">N</span><h1 className="display-font">Sign in</h1><p className="muted" style={{ marginBottom: 28 }}>Use your National University account.</p>{registered && <p className="notice" role="status">Account created successfully. Please log in.</p>}<div className="field"><label htmlFor="student-number">Student number</label><input id="student-number" name="studentNumber" required placeholder="e.g. 202312345" /></div><div className="field"><label htmlFor="password">Password</label><input id="password" name="password" type="password" required placeholder="Enter your password" /></div>{state.error && <p className="notice notice-blue" role="alert">{state.error}</p>}<button className="btn btn-primary" type="submit" style={{ width: "100%", marginTop: 6 }}>Sign in to portal →</button><Link className="link" href="/register" style={{ display: "block", textAlign: "center", marginTop: 18 }}>Create an account</Link><p className="muted" style={{ textAlign: "center", fontSize: 12, marginTop: 22 }}>Use your National University account to sign in.</p></form></section></main>;
+  return <main className="hero"><section className="hero-copy"><Link href="/" style={{ fontWeight: 800, color: "var(--primary-dark)" }}>← Back to NU-Docs</Link><span className="eyebrow" style={{ marginTop: 80 }}>Welcome back</span><h1 className="display-font hero-title">Your campus<br />is moving.</h1><p>Sign in to request documents and check your latest updates.</p></section><section className="login-panel"><form className="surface login-card" action={formAction}><span className="brand-mark">N</span><h1 className="display-font">Sign in</h1><p className="muted" style={{ marginBottom: 28 }}>Use your National University account.</p>{registered && <p className="notice" role="status">Account created successfully. Please log in.</p>}<div className="field"><label htmlFor="student-number">Student number</label><input id="student-number" name="studentNumber" required placeholder="2026-00001" /></div><div className="field"><label htmlFor="password">Password</label><input id="password" name="password" type="password" required placeholder="password" /></div>{state.error && <p className="notice notice-blue" role="alert">{state.error}</p>}<button className="btn btn-primary" type="submit" style={{ width: "100%", marginTop: 6 }}>Sign in to portal →</button><Link className="link" href="/register" style={{ display: "block", textAlign: "center", marginTop: 18 }}>Create an account</Link><p className="muted" style={{ textAlign: "center", fontSize: 12, marginTop: 22 }}>Use your National University account to sign in.</p></form></section></main>;
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={<main className="hero" />}><LoginContent /></Suspense>;
 }
