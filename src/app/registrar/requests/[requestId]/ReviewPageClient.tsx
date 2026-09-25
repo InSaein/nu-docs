@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { RegistrarBreadcrumb, RegistrarPortalShell } from "@/components/registrar-portal-shell";
-import { getDocumentRequestByRequestNumber, updateDocumentRequestStatus } from "@/lib/server/requests";
+import { getDocumentRequestByRequestNumber, saveDocumentRequestInternalNotes, updateDocumentRequestStatus } from "@/lib/server/requests";
 
 const statusValues = {
   Submitted: "SUBMITTED",
@@ -39,15 +39,21 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
   const [request, setRequest] = useState<Awaited<ReturnType<typeof getDocumentRequestByRequestNumber>>>(null);
   const [status, setStatus] = useState<keyof typeof statusValues>("Submitted");
   const [notes, setNotes] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [statusError, setStatusError] = useState("");
+  const [statusSuccess, setStatusSuccess] = useState("");
+  const [noteError, setNoteError] = useState("");
+  const [noteSuccess, setNoteSuccess] = useState("");
+  const [savingNotes, setSavingNotes] = useState(false);
 
   useEffect(() => {
     let active = true;
     getDocumentRequestByRequestNumber(requestId).then((databaseRequest) => {
       if (!active) return;
       setRequest(databaseRequest);
-      if (databaseRequest) setStatus(statusLabels[databaseRequest.status]);
+      if (databaseRequest) {
+        setStatus(statusLabels[databaseRequest.status]);
+        setNotes(databaseRequest.remarks ?? "");
+      }
     });
     return () => {
       active = false;
@@ -57,17 +63,33 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
   const updateStatus = async (nextStatus: keyof typeof statusValues) => {
     if (!request) return;
     try {
-      setSuccess("");
+      setStatusSuccess("");
       await updateDocumentRequestStatus({
         requestNumber: request.requestNumber,
         status: statusValues[nextStatus],
         remarks: notes,
       });
       setStatus(nextStatus);
-      setError("");
-      setSuccess("Request status updated successfully.");
+      setStatusError("");
+      setStatusSuccess("Request status updated successfully.");
     } catch {
-      setError("We could not update this request. Please try again.");
+      setStatusError("We could not update this request. Please try again.");
+    }
+  };
+
+  const saveInternalNotes = async () => {
+    if (!request || savingNotes) return;
+    setSavingNotes(true);
+    setNoteError("");
+    setNoteSuccess("");
+    try {
+      const result = await saveDocumentRequestInternalNotes(request.requestNumber, notes);
+      if (!result.saved) throw new Error("Save did not complete.");
+      setNoteSuccess("Internal notes saved successfully.");
+    } catch {
+      setNoteError("Unable to save internal notes. Please try again.");
+    } finally {
+      setSavingNotes(false);
     }
   };
 
@@ -82,5 +104,5 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
   const uploadedDocument = request.uploadedDocuments[0];
   const submittedDate = new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
-  return <RegistrarPortalShell><RegistrarBreadcrumb currentPage="Request Review" /><PageHeader eyebrow="Registrar Portal / Request review" title={request.requestNumber} description="Review student information, requirements, and request status."><StatusPill tone={status}>{status}</StatusPill></PageHeader><div className="review-layout"><section><div className="surface pad"><div className="section-label">Student information</div><dl className="review-grid"><div><dt>Full name</dt><dd>{request.student.name}</dd></div><div><dt>Student number</dt><dd>{request.student.studentNumber ?? "Not available"}</dd></div><div><dt>Course</dt><dd>{request.student.course || "Not provided"}</dd></div><div><dt>Email</dt><dd>{request.student.email}</dd></div></dl></div><div className="surface pad review-card"><div className="section-label">Request details</div><dl className="details-list"><div><dt>Requested documents</dt><dd>{documents}</dd></div><div><dt>Total amount</dt><dd>{requestItems.length ? `₱${totalAmount.toFixed(2)}` : "Not available"}</dd></div><div><dt>Date submitted</dt><dd>{submittedDate}</dd></div><div><dt>Purpose</dt><dd>{request.purpose}</dd></div></dl>{uploadedDocument && <div className="file-row"><span>▧</span><strong>{uploadedDocument.fileName}</strong><span className="muted">Uploaded</span><button className="link" type="button">View</button></div>}</div></section><aside><div className="surface pad"><div className="section-label">Process request</div><div className="field"><label htmlFor="status">Update status</label><select id="status" value={status} onChange={(event) => updateStatus(event.target.value as keyof typeof statusValues)}><option>Submitted</option><option>Under Review</option><option>Processing</option><option>Ready for Release</option><option>Completed</option><option>Rejected</option></select></div>{success && <p className="inline-success" role="status">✓ {success}</p>}<div className="field"><label htmlFor="notes">Internal notes</label><textarea id="notes" value={notes} onChange={(event) => setNotes(event.target.value)} placeholder="Add a note for registrar staff..." /></div>{error && <p className="notice notice-blue">{error}</p>}<div className="action-stack"><button className="btn btn-primary" type="button" onClick={() => { setError(""); setSuccess("Internal notes saved successfully."); }}>Save note</button></div></div><Link className="back-link" href="/registrar/dashboard">← Back to request queue</Link></aside></div></RegistrarPortalShell>;
+  return <RegistrarPortalShell><RegistrarBreadcrumb currentPage="Request Review" /><PageHeader eyebrow="Registrar Portal / Request review" title={request.requestNumber} description="Review student information, requirements, and request status."><StatusPill tone={status}>{status}</StatusPill></PageHeader><div className="review-layout"><section><div className="surface pad"><div className="section-label">Student information</div><dl className="review-grid"><div><dt>Full name</dt><dd>{request.student.name}</dd></div><div><dt>Student number</dt><dd>{request.student.studentNumber ?? "Not available"}</dd></div><div><dt>Course</dt><dd>{request.student.course || "Not provided"}</dd></div><div><dt>Email</dt><dd>{request.student.email}</dd></div></dl></div><div className="surface pad review-card"><div className="section-label">Request details</div><dl className="details-list"><div><dt>Requested documents</dt><dd>{documents}</dd></div><div><dt>Total amount</dt><dd>{requestItems.length ? `₱${totalAmount.toFixed(2)}` : "Not available"}</dd></div><div><dt>Date submitted</dt><dd>{submittedDate}</dd></div><div><dt>Purpose</dt><dd>{request.purpose}</dd></div></dl>{uploadedDocument && <div className="file-row"><span>▧</span><strong>{uploadedDocument.fileName}</strong><span className="muted">Uploaded</span><button className="link" type="button">View</button></div>}</div></section><aside><div className="surface pad"><div className="section-label">Process request</div><div className="field"><label htmlFor="status">Update status</label><select id="status" value={status} onChange={(event) => updateStatus(event.target.value as keyof typeof statusValues)}><option>Submitted</option><option>Under Review</option><option>Processing</option><option>Ready for Release</option><option>Completed</option><option>Rejected</option></select></div>{statusSuccess && <p className="inline-success" role="status">✓ {statusSuccess}</p>}{statusError && <p className="notice notice-blue" role="alert">{statusError}</p>}<div className="field"><label htmlFor="notes">Internal notes</label><textarea id="notes" value={notes} onChange={(event) => { setNotes(event.target.value); setNoteError(""); setNoteSuccess(""); }} placeholder="Add a note for registrar staff..." /></div><div className="action-stack"><button className="btn btn-primary" type="button" onClick={saveInternalNotes} disabled={savingNotes}>{savingNotes ? "Saving..." : "Save Note"}</button></div>{noteSuccess && <p className="inline-success" role="status">{noteSuccess}</p>}{noteError && <p className="inline-error" role="alert">{noteError}</p>}</div><Link className="back-link" href="/registrar/dashboard">← Back to request queue</Link></aside></div></RegistrarPortalShell>;
 }

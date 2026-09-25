@@ -3,10 +3,31 @@
 import Link from "next/link";
 import { createContext, useContext } from "react";
 
-const StudentIdentityContext = createContext({ firstName: "Student", initials: "S" });
+export type StudentPreviewProfile = {
+  fullName: string;
+  studentNumber: string;
+  course: string;
+  email: string;
+};
 
-export function StudentIdentityProvider({ children, firstName, initials }: { children: React.ReactNode; firstName: string; initials: string }) {
-  return <StudentIdentityContext.Provider value={{ firstName, initials }}>{children}</StudentIdentityContext.Provider>;
+type StudentIdentity = {
+  firstName: string;
+  initials: string;
+  previewProfile: StudentPreviewProfile;
+};
+
+const StudentIdentityContext = createContext<StudentIdentity>({
+  firstName: "Student",
+  initials: "S",
+  previewProfile: { fullName: "Student", studentNumber: "Not available", course: "Not available", email: "Not available" },
+});
+
+export function StudentIdentityProvider({ children, firstName, initials, previewProfile }: { children: React.ReactNode; firstName: string; initials: string; previewProfile: StudentPreviewProfile }) {
+  return <StudentIdentityContext.Provider value={{ firstName, initials, previewProfile }}>{children}</StudentIdentityContext.Provider>;
+}
+
+export function useStudentIdentity() {
+  return useContext(StudentIdentityContext);
 }
 
 export function StudentPortalHeader() {

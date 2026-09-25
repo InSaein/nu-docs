@@ -180,6 +180,29 @@ export async function createDocumentRequest({
   }
 }
 
+export async function saveDocumentRequestInternalNotes(requestNumber: string, notes: string) {
+  const session = await getCurrentSession();
+  if (!session || session.role !== "ADMIN") {
+    throw new Error("Administrator access required.");
+  }
+
+  if (!requestNumber.trim() || typeof notes !== "string") {
+    throw new Error("Invalid internal note request.");
+  }
+
+  try {
+    await prisma.documentRequest.update({
+      where: { requestNumber },
+      data: { remarks: notes },
+      select: { requestNumber: true },
+    });
+    return { saved: true };
+  } catch (error) {
+    console.error("[NU-Docs] saveDocumentRequestInternalNotes failed", { requestNumber, error });
+    throw new Error("Unable to save internal notes.");
+  }
+}
+
 export async function updateDocumentRequestStatus({
   requestNumber,
   status,
