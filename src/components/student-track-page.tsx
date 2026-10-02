@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import { PaymentMethod, PaymentStatus } from "@prisma/client";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { documentLabels } from "@/lib/document-pricing";
+import { getPaymentMethodLabel, paymentOptions } from "@/lib/payment-options";
 import { StudentBreadcrumb, StudentPortalShell } from "@/components/student-portal-shell";
-import { getAuthenticatedDocumentRequestByRequestNumber } from "@/lib/server/requests";
+import { confirmMockPayment, getAuthenticatedDocumentRequestByRequestNumber } from "@/lib/server/requests";
 
 export type RecentRequestSummary = {
   requestNumber: string;
@@ -36,6 +38,16 @@ const statusLabels: Record<string, string> = {
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+}
+
+function formatPaymentDate(date: string) {
+  return new Date(date).toLocaleString("en-US", {
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function RecentRequests({ requests, hasMore }: { requests: RecentRequestSummary[]; hasMore: boolean }) {
@@ -82,7 +94,15 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
   const [loading, setLoading] = useState(Boolean(initialReference.trim()));
   const [notFound, setNotFound] = useState(false);
   const [searchError, setSearchError] = useState("");
+  const [paymentCheckoutOpen, setPaymentCheckoutOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState("");
   const searchInProgress = useRef(false);
+  const paymentInProgress = useRef(false);
+  const firstPaymentMethodRef = useRef<HTMLInputElement>(null);
+  const payNowButtonRef = useRef<HTMLButtonElement>(null);
   const referenceFromUrl = initialReference.trim();
 
   const searchRequest = async (requestNumber: string) => {
@@ -101,6 +121,10 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
     setSearchError("");
     setNotFound(false);
     setRequest(null);
+    setPaymentCheckoutOpen(false);
+    setSelectedPaymentMethod(null);
+    setPaymentError("");
+    setPaymentSuccess("");
     try {
       const databaseRequest = await getAuthenticatedDocumentRequestByRequestNumber(normalizedReference);
       setRequest(databaseRequest);
@@ -121,6 +145,14 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
     if (referenceFromUrl) loadReferenceFromUrl(referenceFromUrl);
   }, [referenceFromUrl]);
 
+  useEffect(() => {
+    if (paymentCheckoutOpen) {
+      firstPaymentMethodRef.current?.focus();
+    } else {
+      payNowButtonRef.current?.focus();
+    }
+  }, [paymentCheckoutOpen]);
+
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void searchRequest(searchValue);
@@ -130,6 +162,16 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
   const currentStage = Math.max(stages.indexOf(status), 0);
   const requestItems = request?.requestItems ?? [];
   const totalCopies = requestItems.reduce((total, item) => total + item.quantity, 0);
+  const requestTotalAmount = requestItems.length
+    ? requestItems.reduce((total, item) => total + Number(item.subtotal), 0)
+    : request?.payment?.amount !== null && request?.payment?.amount !== undefined
+      ? Number(request.payment.amount)
+      : null;
+  const paymentStatus = request?.payment?.status ?? "UNPAID";
+  const paymentIsPaid = paymentStatus === PaymentStatus.PAID;
+  const paymentDisplayAmount = paymentIsPaid && request?.payment?.amount !== null && request?.payment?.amount !== undefined
+    ? Number(request.payment.amount)
+    : requestTotalAmount;
   const legacyDocument = request ? documentLabels[request.documentType] ?? request.documentType : "";
   const submittedDate = request ? new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
   const updatedDate = request ? new Date(request.updatedAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }) : "";
@@ -139,6 +181,37 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
       ? `₱${Number(request.payment.amount).toFixed(2)}`
       : "Not available";
   const showRecentRequests = !referenceFromUrl && !request && !loading && !notFound;
+
+  const confirmPayment = async () => {
+    if (!request || !selectedPaymentMethod || paymentInProgress.current) {
+      return;
+    }
+
+    paymentInProgress.current = true;
+    setPaymentSubmitting(true);
+    setPaymentError("");
+
+    try {
+      const result = await confirmMockPayment(request.requestNumber, selectedPaymentMethod);
+
+      if (!result.success) {
+        setPaymentError(result.error);
+        return;
+      }
+
+      setRequest((currentRequest) => currentRequest
+        ? { ...currentRequest, payment: result.payment }
+        : currentRequest);
+      setPaymentSuccess("Simulated payment confirmed successfully.");
+      setPaymentCheckoutOpen(false);
+      setSelectedPaymentMethod(null);
+    } catch {
+      setPaymentError("We could not confirm this simulated payment. Please try again.");
+    } finally {
+      paymentInProgress.current = false;
+      setPaymentSubmitting(false);
+    }
+  };
 
   return (
     <StudentPortalShell>
@@ -188,6 +261,35 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
             <span className="eyebrow">Request details</span>
             <div className="info-block"><span className="muted">Purpose</span><strong>{request.purpose}</strong></div>
             <div className="info-block"><span className="muted">Processing fee</span><strong>{processingFee}</strong></div>
+            {(request.status === "PROCESSING" || request.payment) && (
+              <section className="track-section payment-section" aria-labelledby="payment-heading">
+                <h2 id="payment-heading">Payment</h2>
+                <dl className="payment-details">
+                  <div><dt>Payment status</dt><dd><strong>{paymentStatus}</strong></dd></div>
+                  <div><dt>{paymentIsPaid ? "Amount" : "Amount due"}</dt><dd>{paymentDisplayAmount === null ? "Not available" : `₱${paymentDisplayAmount.toFixed(2)}`}</dd></div>
+                  {paymentIsPaid && request.payment?.method && <div><dt>Payment method</dt><dd>{getPaymentMethodLabel(request.payment.method)}</dd></div>}
+                  {paymentIsPaid && request.payment?.transactionReference && <div><dt>Transaction reference</dt><dd className="payment-reference">{request.payment.transactionReference}</dd></div>}
+                  {paymentIsPaid && request.payment?.paidAt && <div><dt>Paid</dt><dd>{formatPaymentDate(request.payment.paidAt)}</dd></div>}
+                </dl>
+                {!paymentIsPaid && paymentStatus === PaymentStatus.PENDING && <p className="muted payment-pending-note">A payment is pending confirmation.</p>}
+                {request.status === "PROCESSING" && !paymentIsPaid && !request.payment && requestTotalAmount !== null && (
+                  <button
+                    ref={payNowButtonRef}
+                    className="btn btn-primary"
+                    type="button"
+                    onClick={() => {
+                      setPaymentError("");
+                      setPaymentSuccess("");
+                      setPaymentCheckoutOpen(true);
+                    }}
+                  >
+                    Pay Now
+                  </button>
+                )}
+                {paymentSuccess && <p className="inline-success" role="status">{paymentSuccess}</p>}
+                {paymentError && !paymentCheckoutOpen && <p className="notice notice-blue" role="alert">{paymentError}</p>}
+              </section>
+            )}
             {request.remarks && <div className="info-block"><span className="muted">Registrar remarks</span><strong>{request.remarks}</strong></div>}
             <div className="notice notice-blue"><strong>Need help?</strong><br />Visit the Registrar&apos;s Office with your reference number for assistance.</div>
           </aside>
@@ -195,6 +297,76 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
       ) : showRecentRequests ? (
         <RecentRequests requests={recentRequests} hasMore={hasMoreRequests} />
       ) : null}
+      {paymentCheckoutOpen && request && (
+        <div
+          className="payment-modal-overlay"
+          onClick={() => {
+            if (!paymentSubmitting) setPaymentCheckoutOpen(false);
+          }}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" && !paymentSubmitting) setPaymentCheckoutOpen(false);
+          }}
+        >
+          <section
+            className="payment-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="mock-payment-title"
+            tabIndex={-1}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h2 id="mock-payment-title">Mock Payment</h2>
+            <p className="payment-disclaimer">This is a simulated payment for demonstration purposes. No real payment will be processed.</p>
+            <div className="payment-dialog-amount">
+              <span>Amount Due</span>
+              <strong>{requestTotalAmount === null ? "Not available" : `₱${requestTotalAmount.toFixed(2)}`}</strong>
+            </div>
+            <fieldset className="payment-methods">
+              <legend className="sr-only">Select a simulated payment method</legend>
+              {([
+                ["E-Wallets", paymentOptions.eWallets],
+                ["Online Banking", paymentOptions.onlineBanking],
+              ] as const).map(([groupLabel, options]) => (
+                <div className="payment-method-group" key={groupLabel}>
+                  <h3>{groupLabel}</h3>
+                  <div className="payment-method-options">
+                    {options.map((option, index) => (
+                      <label className="payment-method-option" key={option.value}>
+                        <input
+                          ref={groupLabel === "E-Wallets" && index === 0 ? firstPaymentMethodRef : undefined}
+                          type="radio"
+                          name="simulated-payment-method"
+                          value={option.value}
+                          checked={selectedPaymentMethod === option.value}
+                          onChange={() => setSelectedPaymentMethod(option.value)}
+                        />
+                        <span>{option.label}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </fieldset>
+            {paymentError && <p className="notice notice-blue" role="alert">{paymentError}</p>}
+            <div className="payment-dialog-actions">
+              <button
+                className="btn btn-secondary"
+                type="button"
+                disabled={paymentSubmitting}
+                onClick={() => {
+                  setPaymentCheckoutOpen(false);
+                  setSelectedPaymentMethod(null);
+                }}
+              >
+                Cancel
+              </button>
+              <button className="btn btn-primary" type="button" disabled={!selectedPaymentMethod || paymentSubmitting} onClick={() => void confirmPayment()}>
+                {paymentSubmitting ? "Processing Payment..." : "Confirm Simulated Payment"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </StudentPortalShell>
   );
 }

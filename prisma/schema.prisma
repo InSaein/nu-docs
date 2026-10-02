@@ -13,6 +13,7 @@ model User {
   firstName     String?
   middleName    String?
   lastName      String?
+  nameExtension String?
   course        String?
   email         String            @unique
   password      String
@@ -71,6 +72,9 @@ model Payment {
   proofFileUrl         String?
   amount               Decimal?        @db.Decimal(10, 2)
   verified             Boolean         @default(false)
+  status               PaymentStatus   @default(PENDING)
+  method               PaymentMethod?
+  paidAt               DateTime?
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
   requestId            String          @unique
@@ -128,4 +132,27 @@ enum DocumentType {
 enum NotificationType {
   REQUEST_SUBMITTED
   STATUS_UPDATED
+  PAYMENT_CONFIRMED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+}
+
+enum PaymentMethod {
+  GCASH
+  MAYA
+  GRABPAY
+  SHOPEEPAY
+  COINS_PH
+  BPI_ONLINE
+  BDO_ONLINE
+  METROBANK
+  UNIONBANK
+  RCBC
+  SECURITY_BANK
+  PNB
+  LANDBANK
+  CHINABANK
 }

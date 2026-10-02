@@ -6,6 +6,7 @@ import { PageHeader, StatusPill } from "@/components/app-shell";
 import { RegistrarBreadcrumb, RegistrarPortalShell } from "@/components/registrar-portal-shell";
 import { documentLabels } from "@/lib/document-pricing";
 import { getDocumentRequests } from "@/lib/server/requests";
+import type { DocumentType } from "@prisma/client";
 
 const statusLabels: Record<string, string> = {
   SUBMITTED: "Submitted",
@@ -20,8 +21,10 @@ type RegistrarRequest = {
   id: string;
   student: string;
   document: string;
+  documentTypes: DocumentType[];
   submitted: string;
   status: string;
+  paymentStatus: "PAID" | "PENDING" | null;
 };
 
 export default function RegistrarDashboard() {
@@ -29,6 +32,7 @@ export default function RegistrarDashboard() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("All statuses");
   const [document, setDocument] = useState("All documents");
+  const [payment, setPayment] = useState("All Payments");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   useEffect(() => {
@@ -39,13 +43,20 @@ export default function RegistrarDashboard() {
         id: request.requestNumber,
         student: request.student.name,
         document: request.requestItems.length ? request.requestItems.map((item) => `${documentLabels[item.documentType]} — ${item.quantity}`).join(", ") : documentLabels[request.documentType] ?? request.documentType,
+        documentTypes: request.requestItems.length ? request.requestItems.map((item) => item.documentType) : [request.documentType],
         submitted: new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
         status: statusLabels[request.status] ?? request.status,
+        paymentStatus: request.payment?.status ?? null,
       })));
     });
     return () => { active = false; };
   }, []);
-  const filtered = requests.filter((request) => `${request.id} ${request.student} ${request.document}`.toLowerCase().includes(query.toLowerCase()) && (status === "All statuses" || request.status === status) && (document === "All documents" || request.document === document));
+  const filtered = requests.filter((request) =>
+    `${request.id} ${request.student} ${request.document}`.toLowerCase().includes(query.toLowerCase())
+    && (status === "All statuses" || request.status === status)
+    && (document === "All documents" || request.documentTypes.some((type) => documentLabels[type] === document))
+    && (payment === "All Payments" || (payment === "Paid" ? request.paymentStatus === "PAID" : request.paymentStatus === null))
+  );
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visiblePage = Math.min(currentPage, totalPages);
   const firstRequestIndex = filtered.length ? (visiblePage - 1) * pageSize : 0;
@@ -74,10 +85,13 @@ export default function RegistrarDashboard() {
         <select value={document} onChange={(event) => { setDocument(event.target.value); setCurrentPage(1); }} aria-label="Filter by document">
           <option>All documents</option><option>Transcript of Records</option><option>Certificate of Enrollment</option><option>Certificate of Registration</option><option>Certified True Copy of Grades</option>
         </select>
+        <select value={payment} onChange={(event) => { setPayment(event.target.value); setCurrentPage(1); }} aria-label="Filter by payment">
+          <option>All Payments</option><option>Paid</option><option>Unpaid</option>
+        </select>
       </div>
       <div className="surface table-wrap">
         <table className="data-table registrar-table">
-          <thead><tr><th>Request ID</th><th>Student</th><th>Document</th><th>Date Submitted</th><th>Status</th><th>Assigned To</th><th>Action</th></tr></thead>
+          <thead><tr><th>Request ID</th><th>Student</th><th>Document</th><th>Date Submitted</th><th>Status</th><th>Payment</th><th>Assigned To</th><th>Action</th></tr></thead>
           <tbody>
             {paginatedRequests.length ? paginatedRequests.map((request) => (
               <tr key={request.id}>
@@ -86,10 +100,11 @@ export default function RegistrarDashboard() {
                 <td>{request.document}</td>
                 <td>{request.submitted}</td>
                 <td><StatusPill tone={request.status}>{request.status}</StatusPill></td>
+                <td><StatusPill tone={request.paymentStatus === "PAID" ? "approved" : request.paymentStatus === "PENDING" ? "pending" : "cancelled"}>{request.paymentStatus === "PAID" ? "✓ Paid" : request.paymentStatus === "PENDING" ? "Pending" : "Unpaid"}</StatusPill></td>
                 <td>Registrar queue</td>
                 <td><Link className="link" href={`/registrar/requests/${encodeURIComponent(request.id)}`}>Open →</Link></td>
               </tr>
-            )) : <tr><td className="registrar-empty-cell" colSpan={7}>No requests match the current filters.</td></tr>}
+            )) : <tr><td className="registrar-empty-cell" colSpan={8}>No requests match the current filters.</td></tr>}
           </tbody>
         </table>
       </div>

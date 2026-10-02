@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { PaymentStatus } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { RegistrarBreadcrumb, RegistrarPortalShell } from "@/components/registrar-portal-shell";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { getPaymentMethodLabel } from "@/lib/payment-options";
 import { getDocumentRequestByRequestNumber, saveDocumentRequestInternalNotes, updateDocumentRequestStatus } from "@/lib/server/requests";
 
 const statusValues = {
@@ -113,6 +115,9 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
   const requestItems = request.requestItems;
   const documents = requestItems.length ? requestItems.map((item) => `${documentLabels[item.documentType]} — ${item.quantity} ${item.quantity === 1 ? "copy" : "copies"}`).join(", ") : document;
   const totalAmount = requestItems.reduce((total, item) => total + Number(item.subtotal), 0);
+  const payment = request.payment;
+  const paid = payment?.status === PaymentStatus.PAID;
+  const paymentAmount = paid && payment.amount !== null ? Number(payment.amount) : totalAmount;
   const uploadedDocument = request.uploadedDocuments[0];
   const submittedDate = new Date(request.createdAt).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -142,6 +147,16 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
               <div><dt>Purpose</dt><dd>{request.purpose}</dd></div>
             </dl>
             {uploadedDocument && <div className="file-row"><span>▧</span><strong>{uploadedDocument.fileName}</strong><span className="muted">Uploaded</span><button className="link" type="button">View</button></div>}
+          </div>
+          <div className="surface pad review-card">
+            <div className="section-label">Payment</div>
+            <dl className="details-list">
+              <div><dt>Status</dt><dd><strong>{payment?.status ?? "UNPAID"}</strong></dd></div>
+              <div><dt>{paid ? "Amount" : "Amount due"}</dt><dd>{requestItems.length || (paid && payment.amount !== null) ? `₱${paymentAmount.toFixed(2)}` : "Not available"}</dd></div>
+              {paid && payment.method && <div><dt>Method</dt><dd>{getPaymentMethodLabel(payment.method)}</dd></div>}
+              {paid && payment.transactionReference && <div><dt>Transaction reference</dt><dd className="payment-reference">{payment.transactionReference}</dd></div>}
+              {paid && payment.paidAt && <div><dt>Paid</dt><dd>{new Date(payment.paidAt).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</dd></div>}
+            </dl>
           </div>
         </section>
         <aside>

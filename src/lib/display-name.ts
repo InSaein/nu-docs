@@ -3,6 +3,7 @@ type NamedUser = {
   firstName?: string | null;
   middleName?: string | null;
   lastName?: string | null;
+  nameExtension?: string | null;
 };
 
 export function formatDisplayName(user: NamedUser) {
@@ -11,7 +12,9 @@ export function formatDisplayName(user: NamedUser) {
   }
 
   const middleInitial = user.middleName?.trim().charAt(0);
-  return [user.firstName.trim(), middleInitial ? `${middleInitial}.` : "", user.lastName.trim()].filter(Boolean).join(" ");
+  const extension = user.nameExtension?.trim();
+
+  return [user.firstName.trim(), middleInitial ? `${middleInitial}.` : "", user.lastName.trim(), extension && extension.toLowerCase() !== "none" ? extension : ""].filter(Boolean).join(" ");
 }
 
 export function getStudentFirstName(user: NamedUser) {

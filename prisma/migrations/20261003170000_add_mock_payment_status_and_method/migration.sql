@@ -1,0 +1,25 @@
+CREATE TYPE "PaymentStatus" AS ENUM ('PENDING', 'PAID');
+
+CREATE TYPE "PaymentMethod" AS ENUM (
+  'GCASH',
+  'MAYA',
+  'GRABPAY',
+  'SHOPEEPAY',
+  'COINS_PH',
+  'BPI_ONLINE',
+  'BDO_ONLINE',
+  'METROBANK',
+  'UNIONBANK',
+  'RCBC',
+  'SECURITY_BANK',
+  'PNB',
+  'LANDBANK',
+  'CHINABANK'
+);
+
+ALTER TYPE "NotificationType" ADD VALUE 'PAYMENT_CONFIRMED';
+
+ALTER TABLE "Payment"
+  ADD COLUMN "status" "PaymentStatus" NOT NULL DEFAULT 'PENDING',
+  ADD COLUMN "method" "PaymentMethod",
+  ADD COLUMN "paidAt" TIMESTAMP(3);

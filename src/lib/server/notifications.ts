@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 
 export type NotificationListItem = {
   id: string;
-  type: "REQUEST_SUBMITTED" | "STATUS_UPDATED";
+  type: "REQUEST_SUBMITTED" | "STATUS_UPDATED" | "PAYMENT_CONFIRMED";
   title: string;
   message: string;
   isRead: boolean;
