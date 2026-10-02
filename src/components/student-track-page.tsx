@@ -2,9 +2,12 @@
 
 import Link from "next/link";
 import { PaymentMethod, PaymentStatus } from "@prisma/client";
+import type { DocumentType } from "@prisma/client";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
+import { DocumentPreviewModal } from "@/components/document-preview-modal";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { useStudentIdentity } from "@/components/student-portal-header";
 import { documentLabels } from "@/lib/document-pricing";
 import { getPaymentMethodLabel, paymentOptions } from "@/lib/payment-options";
 import { StudentBreadcrumb, StudentPortalShell } from "@/components/student-portal-shell";
@@ -95,6 +98,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
   const [notFound, setNotFound] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [paymentCheckoutOpen, setPaymentCheckoutOpen] = useState(false);
+  const [documentPreviewType, setDocumentPreviewType] = useState<DocumentType | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
   const [paymentError, setPaymentError] = useState("");
@@ -122,6 +126,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
     setNotFound(false);
     setRequest(null);
     setPaymentCheckoutOpen(false);
+    setDocumentPreviewType(null);
     setSelectedPaymentMethod(null);
     setPaymentError("");
     setPaymentSuccess("");
@@ -161,6 +166,14 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
   const status = request ? statusLabels[request.status] ?? request.status : "Submitted";
   const currentStage = Math.max(stages.indexOf(status), 0);
   const requestItems = request?.requestItems ?? [];
+  const requestedPreviewItems = requestItems.length
+    ? Array.from(requestItems.reduce((items, item) => {
+        items.set(item.documentType, (items.get(item.documentType) ?? 0) + item.quantity);
+        return items;
+      }, new Map<DocumentType, number>()), ([documentType, quantity]) => ({ documentType, quantity }))
+    : request
+      ? [{ documentType: request.documentType, quantity: 1 }]
+      : [];
   const totalCopies = requestItems.reduce((total, item) => total + item.quantity, 0);
   const requestTotalAmount = requestItems.length
     ? requestItems.reduce((total, item) => total + Number(item.subtotal), 0)
@@ -181,6 +194,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
       ? `₱${Number(request.payment.amount).toFixed(2)}`
       : "Not available";
   const showRecentRequests = !referenceFromUrl && !request && !loading && !notFound;
+  const { previewProfile } = useStudentIdentity();
 
   const confirmPayment = async () => {
     if (!request || !selectedPaymentMethod || paymentInProgress.current) {
@@ -247,6 +261,11 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
                 <div className="request-item-row"><span>{legacyDocument}</span><strong>Quantity not recorded</strong></div>
               )}
               <div className="request-item-total"><span>Total copies</span><strong>{requestItems.length ? totalCopies : "Not available"}</strong></div>
+              {(request.status === "READY_FOR_RELEASE" || request.status === "COMPLETED") && requestedPreviewItems.length > 0 && (
+                <button className="btn btn-secondary" type="button" onClick={() => setDocumentPreviewType(requestedPreviewItems[0].documentType)}>
+                  View Requested Documents
+                </button>
+              )}
             </div>
             <dl className="details-list">
               <div><dt>Date submitted</dt><dd>{submittedDate}</dd></div>
@@ -366,6 +385,16 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
             </div>
           </section>
         </div>
+      )}
+      {request && (
+        <DocumentPreviewModal
+          documentType={documentPreviewType}
+          requestedDocuments={requestedPreviewItems}
+          student={previewProfile}
+          showWatermark={false}
+          onDocumentTypeChange={setDocumentPreviewType}
+          onClose={() => setDocumentPreviewType(null)}
+        />
       )}
     </StudentPortalShell>
   );

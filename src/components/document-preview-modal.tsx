@@ -9,6 +9,9 @@ type Props = {
   documentType: DocumentType | null;
   student: StudentPreviewProfile;
   onClose: () => void;
+  showWatermark?: boolean;
+  requestedDocuments?: Array<{ documentType: DocumentType; quantity: number }>;
+  onDocumentTypeChange?: (documentType: DocumentType) => void;
 };
 
 const sampleCourses = [
@@ -119,8 +122,21 @@ function PreviewDocument({ documentType, student }: { documentType: DocumentType
   }
 }
 
-export function DocumentPreviewModal({ documentType, student, onClose }: Props) {
+export function DocumentPreviewModal({
+  documentType,
+  student,
+  onClose,
+  showWatermark = true,
+  requestedDocuments,
+  onDocumentTypeChange,
+}: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const documentItems = requestedDocuments?.length
+    ? requestedDocuments
+    : documentType
+      ? [{ documentType, quantity: 1 }]
+      : [];
+  const selectedDocument = documentItems.find((item) => item.documentType === documentType) ?? documentItems[0];
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -142,9 +158,36 @@ export function DocumentPreviewModal({ documentType, student, onClose }: Props) 
   }, [documentType, onClose]);
 
   return <dialog ref={dialogRef} className="document-preview-dialog" aria-labelledby="document-preview-title" onCancel={() => onClose()} onClose={onClose}>
-    {documentType && <div className="document-preview-panel">
-      <div className="document-preview-toolbar"><div><span className="preview-toolbar-label">Document sample</span><strong>{documentLabels[documentType]}</strong></div><button type="button" className="preview-close-button" onClick={() => { dialogRef.current?.close(); onClose(); }} aria-label={`Close ${documentLabels[documentType]} preview`}>×</button></div>
-      <article className="preview-paper"><div className="preview-watermark" aria-hidden="true">SAMPLE — FOR PREVIEW ONLY</div><div className="preview-paper-content"><PreviewDocument documentType={documentType} student={student} /></div></article>
+    {selectedDocument && <div className="document-preview-panel">
+      <div className="document-preview-toolbar">
+        <div>
+          <span className="preview-toolbar-label">Document sample</span>
+          <strong>{documentLabels[selectedDocument.documentType]}</strong>
+          <span className="preview-toolbar-label">{selectedDocument.quantity} {selectedDocument.quantity === 1 ? "copy" : "copies"} requested</span>
+        </div>
+        <div className="document-preview-toolbar-actions">
+          {documentItems.length > 1 && onDocumentTypeChange && (
+            <label className="preview-document-selector">
+              <span className="preview-toolbar-label">Requested documents</span>
+              <select value={documentType ?? ""} onChange={(event) => {
+                const selected = documentItems.find((item) => item.documentType === event.target.value);
+                if (selected) onDocumentTypeChange(selected.documentType);
+              }}>
+                {documentItems.map((item) => (
+                  <option key={item.documentType} value={item.documentType}>
+                    {documentLabels[item.documentType]} · {item.quantity} {item.quantity === 1 ? "copy" : "copies"}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <button type="button" className="preview-close-button" onClick={() => { dialogRef.current?.close(); onClose(); }} aria-label={`Close ${documentLabels[selectedDocument.documentType]} preview`}>×</button>
+        </div>
+      </div>
+      <article className="preview-paper">
+        {showWatermark && <div className="preview-watermark" aria-hidden="true">SAMPLE — FOR PREVIEW ONLY</div>}
+        <div className="preview-paper-content"><PreviewDocument documentType={selectedDocument.documentType} student={student} /></div>
+      </article>
     </div>}
   </dialog>;
 }

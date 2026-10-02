@@ -2,23 +2,24 @@
 
 import { useFormStatus } from "react-dom";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { adminLogout } from "@/lib/server/auth";
+import { logout } from "@/lib/server/auth";
 
-function RegistrarLogoutButton() {
+function StudentLogoutButton() {
   const { pending } = useFormStatus();
 
   return (
-    <button type="submit" disabled={pending} aria-busy={pending} className="registrar-action-loading-button">
+    <button type="submit" disabled={pending} aria-busy={pending}>
       {pending && <LoadingSpinner inline label="Logging out" />}
+      <span className="student-logout-icon" aria-hidden="true">{pending ? "" : "↪"}</span>
       <span aria-live="polite">{pending ? "Logging out..." : "Sign out"}</span>
     </button>
   );
 }
 
-export function RegistrarLogoutForm() {
+export function StudentLogoutForm() {
   return (
-    <form className="registrar-sidebar-logout" action={adminLogout}>
-      <RegistrarLogoutButton />
+    <form className="student-sidebar-logout" action={logout}>
+      <StudentLogoutButton />
     </form>
   );
 }
