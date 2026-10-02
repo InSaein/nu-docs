@@ -1,10 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { DocumentType } from "@prisma/client";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { DocumentPreviewModal } from "@/components/document-preview-modal";
+import { LoadingSpinner } from "@/components/loading-spinner";
 import { useStudentIdentity } from "@/components/student-portal-header";
 import { documentLabels, documentPricing } from "@/lib/document-pricing";
 import { StudentBreadcrumb, StudentPortalShell } from "@/components/student-portal-shell";
@@ -27,6 +28,8 @@ export default function RequestPage() {
   const [requestNumber, setRequestNumber] = useState("");
   const [submittedAt, setSubmittedAt] = useState("");
   const [submissionError, setSubmissionError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const submissionInProgress = useRef(false);
 
   const selectedItems = useMemo(() => documents.filter((document) => quantities[document.type] > 0), [quantities]);
   const totalCopies = selectedItems.reduce((total, document) => total + quantities[document.type], 0);
@@ -38,6 +41,7 @@ export default function RequestPage() {
 
   const submitRequest = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (submissionInProgress.current) return;
     setSubmissionError("");
     if (!selectedItems.length) {
       setSubmissionError("Please select at least one document.");
@@ -46,6 +50,8 @@ export default function RequestPage() {
     const formData = new FormData(event.currentTarget);
     const purpose = String(formData.get("purpose") ?? "");
 
+    submissionInProgress.current = true;
+    setSubmitting(true);
     try {
       const request = await createDocumentRequest({
         items: selectedItems.map((document) => ({ documentType: document.type, quantity: quantities[document.type] })),
@@ -57,6 +63,9 @@ export default function RequestPage() {
     } catch (error) {
       console.error("[NU-Docs] Failed to create document request", { error });
       setSubmissionError("We could not submit your request. Please try again.");
+    } finally {
+      submissionInProgress.current = false;
+      setSubmitting(false);
     }
   };
 
@@ -83,7 +92,7 @@ export default function RequestPage() {
           </div>
         </section>
       ) : (
-        <form className="request-layout" onSubmit={submitRequest}>
+        <form className="request-layout" onSubmit={submitRequest} aria-busy={submitting}>
           <section className="surface pad">
             <div className="form-heading">
               <span className="form-step">01</span>
@@ -129,7 +138,10 @@ export default function RequestPage() {
             </div>
             {submissionError && <p className="notice notice-blue" role="alert">{submissionError}</p>}
             <div className="button-row">
-              <button className="btn btn-primary" type="submit">Submit Request</button>
+              <button className="btn btn-primary student-action-loading-button" type="submit" disabled={submitting} aria-busy={submitting}>
+                {submitting && <LoadingSpinner inline label="Submitting request" />}
+                {submitting ? "Submitting Request..." : "Submit Request"}
+              </button>
               <Link className="btn btn-secondary" href="/student/dashboard">Back</Link>
             </div>
           </section>

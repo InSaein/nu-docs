@@ -328,6 +328,10 @@ button, input, select, textarea { font: inherit; }
 .registrar-sidebar-logout { margin-top: auto; padding-top: 18px; border-top: 1px solid #5962a3; }
 .registrar-sidebar-logout button { width: 100%; border: 0; background: transparent; color: #d7d8ed; padding: 11px 12px; text-align: left; font-size: 13px; cursor: pointer; }
 .registrar-sidebar-logout button:hover, .registrar-sidebar-logout button:focus-visible { background: var(--primary-dark); color: #fff; outline: none; }
+.registrar-sidebar-logout button:disabled { cursor: wait; opacity: .8; }
+.registrar-action-loading-button { white-space: nowrap; }
+.registrar-action-loading-button:disabled { cursor: wait; opacity: .9; }
+.registrar-action-pending { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; color: var(--primary-dark); font-size: 12px; font-weight: 700; }
 .registrar-nav-link { display: flex; align-items: center; gap: 10px; padding: 11px 12px; color: #d7dadd; font-size: 13px; border-left: 3px solid transparent; }
 .registrar-nav-link span { width: 18px; color: var(--accent); text-align: center; }
 .registrar-nav-link:hover, .registrar-nav-link:focus-visible { background: var(--primary-dark); border-left-color: var(--accent); color: #fff; outline: none; }
@@ -662,3 +666,13 @@ button, input, select, textarea { font: inherit; }
   .preview-summary-grid { grid-template-columns: 1fr; }
   .preview-paper-footer { flex-direction: column; }
 }
+
+.route-loading { display: flex; min-height: 42vh; align-items: center; justify-content: center; gap: 11px; padding: 24px; color: var(--primary-dark); font-size: 13px; font-weight: 700; }
+.route-loading-spinner { width: 24px; height: 24px; flex: 0 0 24px; border: 3px solid #d9dced; border-top-color: var(--primary); border-right-color: var(--accent); border-radius: 50%; animation: nu-docs-spin .8s linear infinite; }
+@keyframes nu-docs-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .route-loading-spinner { animation: none; border-color: var(--primary); border-top-color: var(--accent); }
+}
+.student-action-loading-button { white-space: nowrap; }
+.student-action-loading-button:disabled { cursor: wait; opacity: .9; }
+.route-loading-spinner-inline { width: 15px; height: 15px; flex: 0 0 15px; border-width: 2px; border-color: rgba(255, 255, 255, .45); border-top-color: var(--accent); border-right-color: #fff; }
