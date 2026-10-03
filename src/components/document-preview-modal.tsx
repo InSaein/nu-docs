@@ -136,7 +136,9 @@ export function DocumentPreviewModal({
     : documentType
       ? [{ documentType, quantity: 1 }]
       : [];
-  const selectedDocument = documentItems.find((item) => item.documentType === documentType) ?? documentItems[0];
+  const selectedDocument = documentType
+    ? documentItems.find((item) => item.documentType === documentType)
+    : undefined;
 
   useEffect(() => {
     const dialog = dialogRef.current;
