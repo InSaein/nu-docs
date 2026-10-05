@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { createContext, useContext } from "react";
+import { PortalMenuButton } from "@/components/portal-drawer";
 
 export type StudentPreviewProfile = {
   fullName: string;
@@ -30,8 +31,16 @@ export function useStudentIdentity() {
   return useContext(StudentIdentityContext);
 }
 
-export function StudentPortalHeader() {
+export function StudentPortalHeader({
+  menuOpen,
+  menuButtonRef,
+  onMenuToggle,
+}: {
+  menuOpen: boolean;
+  menuButtonRef: React.RefObject<HTMLButtonElement | null>;
+  onMenuToggle: () => void;
+}) {
   const { firstName, initials } = useContext(StudentIdentityContext);
 
-  return <header className="portal-header student-admin-header"><div className="portal-brand-group"><button className="portal-menu-button" type="button" aria-label="Open application menu">⠿</button><Link href="/student/dashboard" className="student-brand" aria-label="NU-Docs student home"><span className="portal-logo">NU</span><span><strong>NU-Docs</strong><small>STUDENT PORTAL</small></span></Link></div><div className="portal-account"><Link href="/student/notifications" className="portal-notification" aria-label="View notifications"><span aria-hidden="true">♟</span><i aria-label="Unread notifications" /></Link><span>Hi, {firstName}</span><span className="portal-avatar" aria-label={`${firstName} initials`}>{initials}</span></div></header>;
+  return <header className="portal-header student-admin-header"><div className="portal-brand-group"><PortalMenuButton isOpen={menuOpen} onClick={onMenuToggle} buttonRef={menuButtonRef} controls="student-navigation-drawer" /><Link href="/student/dashboard" className="student-brand" aria-label="NU-Docs student home"><span className="portal-logo">NU</span><span><strong>NU-Docs</strong><small>STUDENT PORTAL</small></span></Link></div><div className="portal-account"><Link href="/student/notifications" className="portal-notification" aria-label="View notifications"><span aria-hidden="true">♟</span><i aria-label="Unread notifications" /></Link><span>Hi, {firstName}</span><Link href="/student/profile" className="portal-avatar" aria-label="Open student profile">{initials}</Link></div></header>;
 }

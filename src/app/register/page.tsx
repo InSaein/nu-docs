@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { COURSE_OPTIONS, isValidCourse } from "@/lib/course-options";
+import { COURSE_OPTIONS, isValidCourse, NAME_EXTENSION_OPTIONS } from "@/lib/course-options";
 import { getStudentEmailValidationError, getStudentNumberValidationError } from "@/lib/registration-validation";
 import { registerStudent, type RegistrationFieldName, type RegistrationState } from "@/lib/server/registration";
 
@@ -159,12 +159,11 @@ export default function RegisterPage() {
             <label htmlFor="name-extension">Name extension</label>
             <select id="name-extension" name="nameExtension" defaultValue="None">
               <option value="None">None</option>
-              <option value="Jr.">Jr.</option>
-              <option value="Sr.">Sr.</option>
-              <option value="II">II</option>
-              <option value="III">III</option>
-              <option value="IV">IV</option>
-              <option value="V">V</option>
+              {NAME_EXTENSION_OPTIONS.map((extension) => (
+                <option key={extension} value={extension}>
+                  {extension}
+                </option>
+              ))}
             </select>
           </div>
 

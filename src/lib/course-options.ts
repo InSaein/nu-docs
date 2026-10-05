@@ -15,6 +15,10 @@ export const APPROVED_COURSES = [
 
 export type ApprovedCourse = (typeof APPROVED_COURSES)[number];
 
+export const NAME_EXTENSION_OPTIONS = ["Jr.", "Sr.", "II", "III", "IV", "V"] as const;
+
+export type NameExtension = (typeof NAME_EXTENSION_OPTIONS)[number];
+
 export const COURSE_OPTIONS = [
   {
     label: "School of Engineering and Technology",
@@ -54,6 +58,10 @@ export function normalizeOptionalNameExtension(value: string | null | undefined)
   }
 
   return normalizedValue;
+}
+
+export function isValidNameExtension(value: string): value is NameExtension {
+  return NAME_EXTENSION_OPTIONS.some((extension) => extension === value);
 }
 
 export function isValidCourse(value: string | null | undefined): value is ApprovedCourse {

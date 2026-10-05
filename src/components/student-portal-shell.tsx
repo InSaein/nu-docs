@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { StudentPortalHeader } from "@/components/student-portal-header";
 import { StudentLogoutForm } from "@/components/student-logout-form";
 import { PortalFooter } from "@/components/app-shell";
+import { usePortalDrawer } from "@/components/portal-drawer";
 
 const studentLinks = [
   { icon: "⌂", label: "Dashboard", href: "/student/dashboard" },
@@ -16,5 +19,43 @@ export function StudentBreadcrumb({ currentPage }: { currentPage: string }) {
 }
 
 export function StudentPortalShell({ children }: { children: React.ReactNode }) {
-  return <div className="portal-home student-admin-portal"><StudentPortalHeader /><div className="student-shell"><aside className="student-sidebar"><nav aria-label="Student navigation">{studentLinks.map((item) => <Link className="student-nav-link" href={item.href} key={item.href}><span aria-hidden="true">{item.icon}</span>{item.label}</Link>)}</nav><StudentLogoutForm /></aside><main className="student-admin-main student-page-main">{children}</main></div><PortalFooter /></div>;
+  const { isOpen, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
+
+  return (
+    <div className="portal-home student-admin-portal">
+      <StudentPortalHeader
+        menuOpen={isOpen}
+        menuButtonRef={menuButtonRef}
+        onMenuToggle={() => setIsOpen((open) => !open)}
+      />
+      <button
+        className="portal-drawer-backdrop"
+        type="button"
+        aria-label="Close navigation menu"
+        tabIndex={isOpen ? 0 : -1}
+        hidden={!isOpen}
+        onClick={() => setIsOpen(false)}
+      />
+      <div className="student-shell">
+        <aside
+          ref={drawerRef}
+          id="student-navigation-drawer"
+          className={`student-sidebar portal-navigation-drawer${isOpen ? " is-open" : ""}`}
+          aria-hidden={!isOpen}
+          inert={!isOpen}
+        >
+          <nav aria-label="Student navigation">
+            {studentLinks.map((item) => (
+              <Link className="student-nav-link" href={item.href} key={item.href} onClick={() => setIsOpen(false)}>
+                <span aria-hidden="true">{item.icon}</span>{item.label}
+              </Link>
+            ))}
+          </nav>
+          <StudentLogoutForm />
+        </aside>
+        <main className="student-admin-main student-page-main">{children}</main>
+      </div>
+      <PortalFooter />
+    </div>
+  );
 }

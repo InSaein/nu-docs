@@ -89,6 +89,18 @@ button, input, select, textarea { font: inherit; }
 .login-panel { display: flex; align-items: center; justify-content: center; padding: 30px; }
 .login-card { width: min(100%, 410px); padding: 38px; }
 .login-card h1 { font-size: 32px; margin: 12px 0 8px; }
+.login-role-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; width: 100%; margin-bottom: 25px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: #f5f6f9; }
+.login-role-option { display: flex; min-width: 0; min-height: 40px; align-items: center; justify-content: center; gap: 8px; padding: 7px 10px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink-soft); font-size: 13px; font-weight: 700; cursor: pointer; }
+.login-role-option[data-active="true"] { border-color: rgba(53, 64, 143, .12); background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(37, 45, 104, .12); }
+.login-role-option:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.login-role-option:disabled { cursor: wait; opacity: .72; }
+.login-role-option svg { width: 17px; height: 17px; flex: 0 0 17px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
+.login-description { margin-bottom: 28px; }
+.login-footnote { margin: 22px 0 0; text-align: center; font-size: 12px; }
+@media (max-width: 860px) {
+  .login-hero { grid-template-columns: minmax(0, 1fr); }
+  .login-hero .hero-copy { min-height: 0; padding: 34px clamp(24px, 8vw, 72px); }
+}
 .step-list { display: grid; gap: 0; }
 .step { display: flex; gap: 14px; padding: 0 0 24px; position: relative; }
 .step:not(:last-child):after { content: ""; position: absolute; left: 15px; top: 32px; bottom: 0; width: 1px; background: #c9d8ce; }
@@ -623,6 +635,47 @@ button, input, select, textarea { font: inherit; }
     .student-status-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
 
+  .portal-avatar:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .student-profile-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(220px, 280px); align-items: start; gap: 18px; min-width: 0; }
+  .student-profile-card, .student-profile-photo-card { min-width: 0; padding: 22px; }
+  .student-profile-section-heading { padding-bottom: 16px; border-bottom: 1px solid #edf0f3; }
+  .student-profile-section-heading h2 { margin: 0; color: var(--primary-dark); font-size: 17px; }
+  .student-profile-section-heading p { margin: 5px 0 0; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+  .student-profile-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 16px; padding-top: 18px; }
+  .student-profile-fields .field { min-width: 0; }
+  .student-profile-fields .field input, .student-profile-fields .field select { min-width: 0; }
+  .student-profile-fields .field input[readonly] { background: #f1f2f5; color: #656b75; }
+  .student-profile-optional { color: var(--ink-soft); font-size: 11px; font-weight: 400; }
+  .student-profile-field-error { color: #a03d3d; font-size: 11px; line-height: 1.4; }
+  .student-profile-fields [aria-invalid="true"] { border-color: #bd4545; }
+  .student-profile-message { margin: 16px 0 0; padding: 11px 13px; border-radius: 6px; font-size: 12px; line-height: 1.5; }
+  .student-profile-error { background: #fff0ed; color: #8c3434; }
+  .student-profile-success { background: #eaf6ed; color: #267845; }
+  .student-profile-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding-top: 2px; }
+  .student-profile-actions .btn { min-height: 42px; }
+  .student-profile-actions .btn:disabled { cursor: wait; opacity: .7; }
+  .student-profile-cancel { border: 1px solid var(--line); background: #fff; color: var(--primary-dark); }
+  .student-profile-cancel:hover { background: var(--primary-soft); }
+  .student-profile-spinner { width: 15px; height: 15px; border: 2px solid rgba(255, 255, 255, .45); border-top-color: #fff; border-radius: 50%; animation: student-profile-spin .7s linear infinite; }
+  .student-profile-photo-placeholder { width: 104px; aspect-ratio: 1; display: grid; place-items: center; margin: 24px auto 14px; border: 1px solid #dfe2ed; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 30px; font-weight: 700; }
+  .student-profile-photo-note { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.6; text-align: center; }
+  @keyframes student-profile-spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 760px) {
+    .student-profile-layout { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  @media (max-width: 520px) {
+    .student-profile-card, .student-profile-photo-card { padding: 17px; }
+    .student-profile-fields { grid-template-columns: minmax(0, 1fr); }
+    .student-profile-actions { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+    .student-profile-actions .btn { width: 100%; padding: 11px 10px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .student-profile-spinner { animation-duration: 1.5s; }
+  }
+
   .student-dashboard-grid { grid-template-columns: 1fr; }
 
 .quantity-choice { grid-template-columns: auto 1fr auto auto; }
@@ -841,4 +894,26 @@ button, input, select, textarea { font: inherit; }
   .registrar-sidebar { height: auto; overflow: visible; }
   .registrar-main { height: auto; overflow: visible; }
   .student-sidebar-logout { display: block; flex: 0 0 auto; margin-top: 10px; padding-top: 8px; border-top: 1px solid #5962a3; }
+}
+
+.student-shell, .registrar-shell { position: relative; display: flex; flex: 1; min-width: 0; }
+.student-admin-portal .student-admin-main, .registrar-portal .registrar-main { width: min(1600px, 100%); min-width: 0; flex: 1; margin: 0 auto; }
+.portal-header { position: relative; }
+.portal-menu-button { position: relative; z-index: 1302; display: grid; width: 44px; height: 44px; flex: 0 0 44px; place-items: center; border: 1px solid rgba(255, 255, 255, .24); border-radius: 7px; }
+.portal-menu-button svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-linecap: round; stroke-width: 2; }
+.portal-menu-button:hover, .portal-menu-button:focus-visible { background: rgba(255, 255, 255, .12); outline: 2px solid var(--accent); outline-offset: 2px; }
+.portal-navigation-drawer { position: fixed; z-index: 1301; top: 0; bottom: 0; left: 0; width: min(280px, 50vw); max-width: 100%; min-height: 0; flex: none; display: flex; flex-direction: column; gap: 12px; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; padding: 68px 14px 20px; box-shadow: 8px 0 28px rgba(15, 20, 55, .24); transform: translateX(-105%); transition: transform .22s ease; }
+.portal-navigation-drawer.is-open { transform: translateX(0); }
+.student-sidebar.portal-navigation-drawer { background: var(--primary); }
+.registrar-sidebar.portal-navigation-drawer { border-right: 1px solid #454e9a; background: var(--primary); }
+.portal-navigation-drawer nav { display: grid; flex: 0 0 auto; gap: 4px; overflow: visible; }
+.portal-navigation-drawer .student-sidebar-logout, .portal-navigation-drawer .registrar-sidebar-logout { display: block; flex: 0 0 auto; margin-top: auto; padding-top: 18px; border-top: 1px solid #5962a3; }
+.portal-drawer-backdrop { position: fixed; z-index: 1300; inset: 0; display: block; width: 100%; height: 100%; padding: 0; border: 0; background: rgba(12, 16, 37, .48); cursor: default; }
+.portal-drawer-backdrop[hidden] { display: none; }
+.portal-drawer-backdrop:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
+@media (max-width: 760px) {
+  .student-shell, .registrar-shell { display: block; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .portal-navigation-drawer { transition: none; }
 }
