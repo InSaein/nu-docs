@@ -89,6 +89,9 @@ button, input, select, textarea { font: inherit; }
 .login-panel { display: flex; align-items: center; justify-content: center; padding: 30px; }
 .login-card { width: min(100%, 410px); padding: 38px; }
 .login-card h1 { font-size: 32px; margin: 12px 0 8px; }
+.login-demo-button { border: 1px solid var(--primary); background: #fff; color: var(--primary); }
+.login-demo-button:hover { background: var(--primary-soft); }
+.login-demo-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .login-role-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; width: 100%; margin-bottom: 25px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: #f5f6f9; }
 .login-role-option { display: flex; min-width: 0; min-height: 40px; align-items: center; justify-content: center; gap: 8px; padding: 7px 10px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink-soft); font-size: 13px; font-weight: 700; cursor: pointer; }
 .login-role-option[data-active="true"] { border-color: rgba(53, 64, 143, .12); background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(37, 45, 104, .12); }

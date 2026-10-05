@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Suspense, useActionState, useState } from "react";
+import { Suspense, useActionState, useRef, useState } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { adminLogin, login, type LoginState } from "@/lib/server/auth";
 
@@ -36,11 +36,25 @@ function LoginForm({
   const authenticate = (previousState: LoginState, formData: FormData) =>
     mode === "admin" ? adminLogin(previousState, formData) : login(previousState, formData);
   const [state, formAction, pending] = useActionState(authenticate, initialState);
+  const formRef = useRef<HTMLFormElement>(null);
+  const identifierRef = useRef<HTMLInputElement>(null);
+  const passwordRef = useRef<HTMLInputElement>(null);
   const isAdmin = mode === "admin";
   const identifierId = isAdmin ? "admin-identifier" : "student-number";
+  const showDemoLogin = process.env.NODE_ENV !== "production";
+
+  function submitDemoLogin() {
+    if (pending || !formRef.current || !identifierRef.current || !passwordRef.current) {
+      return;
+    }
+
+    identifierRef.current.value = isAdmin ? "ADMIN-00001" : "2026-00001";
+    passwordRef.current.value = isAdmin ? "admin" : "password";
+    formRef.current.requestSubmit();
+  }
 
   return (
-    <form className="surface login-card" action={formAction}>
+    <form ref={formRef} className="surface login-card" action={formAction}>
       <div className="login-role-toggle" role="group" aria-label="Choose account type">
         <button
           className="login-role-option"
@@ -77,6 +91,7 @@ function LoginForm({
         <label htmlFor={identifierId}>{isAdmin ? "Admin ID" : "Student Number"}</label>
         <input
           id={identifierId}
+          ref={identifierRef}
           name="studentNumber"
           autoComplete="username"
           required
@@ -87,6 +102,7 @@ function LoginForm({
         <label htmlFor={`${mode}-password`}>Password</label>
         <input
           id={`${mode}-password`}
+          ref={passwordRef}
           name="password"
           type="password"
           autoComplete="current-password"
@@ -105,6 +121,18 @@ function LoginForm({
         {pending && <LoadingSpinner inline label="Logging in" />}
         <span aria-live="polite">{pending ? "Logging in..." : "Login"}</span>
       </button>
+      {showDemoLogin && (
+        <button
+          className="btn login-demo-button"
+          type="button"
+          onClick={submitDemoLogin}
+          disabled={pending}
+          aria-label={`Demo Login as ${isAdmin ? "Admin" : "Student"}`}
+          style={{ width: "100%", marginTop: 9 }}
+        >
+          Demo Login
+        </button>
+      )}
       {!isAdmin && (
         <>
           <Link className="link" href="/register" style={{ display: "block", textAlign: "center", marginTop: 18 }}>
