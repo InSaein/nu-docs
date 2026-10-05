@@ -662,9 +662,34 @@ button, input, select, textarea { font: inherit; }
 .payment-method-option:has(input:checked) { border-color: var(--primary); background: var(--primary-soft); }
 .payment-method-option:focus-within { outline: 2px solid rgba(53, 64, 143, .4); outline-offset: 2px; }
 .payment-method-option input { accent-color: var(--primary); }
+.payment-method-option input, .payment-method-logo { flex: 0 0 auto; }
+.payment-method-logo { width: 36px; height: 28px; object-fit: contain; }
+.payment-method-option > span { min-width: 0; overflow-wrap: anywhere; }
 .payment-dialog-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; }
 .payment-dialog-actions button { min-height: 42px; }
 .payment-dialog-actions button:disabled { opacity: .55; cursor: not-allowed; }
+.payment-confirmation-card { min-width: 0; padding: 18px; border: 1px solid #e2e6f0; border-radius: 10px; background: linear-gradient(145deg, #fff, #f8f9fd); }
+.payment-confirmation-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.payment-confirmation-heading h3 { margin: 4px 0 0; color: var(--primary-dark); font-family: Georgia, "Times New Roman", serif; font-size: 22px; }
+.payment-paid-badge { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 999px; background: #e7f6eb; color: #176b31; font-size: 11px; font-weight: 800; }
+.payment-confirmation-message { margin: 10px 0 18px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+.payment-confirmation-content { display: grid; grid-template-columns: minmax(0, 1fr) 164px; align-items: center; gap: 18px; }
+.payment-confirmation-details { display: grid; min-width: 0; gap: 12px; margin: 0; }
+.payment-confirmation-details > div { display: grid; grid-template-columns: minmax(90px, .75fr) minmax(0, 1.25fr); align-items: start; gap: 10px; font-size: 12px; }
+.payment-confirmation-details dt { color: var(--ink-soft); }
+.payment-confirmation-details dd { min-width: 0; margin: 0; color: var(--foreground); font-weight: 650; text-align: right; overflow-wrap: anywhere; }
+.payment-confirmation-method { display: flex; align-items: center; justify-content: flex-end; gap: 7px; }
+.payment-confirmation-method .payment-method-logo { width: 32px; height: 24px; }
+.payment-confirmation-qr { display: grid; justify-items: center; gap: 7px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: #fff; color: var(--primary-dark); text-align: center; }
+.mock-payment-qr { display: block; width: min(100%, 140px); height: auto; aspect-ratio: 1; border: 1px solid #e1e3e8; }
+.payment-confirmation-qr strong { font-size: 10px; letter-spacing: .06em; }
+.payment-confirmation-qr span { color: var(--ink-soft); font-size: 10px; line-height: 1.35; }
+.payment-receipt-button { width: 100%; margin-top: 12px; }
+.payment-confirmation-dialog { position: relative; width: min(700px, 100%); overflow-x: hidden; }
+.payment-confirmation-dialog .payment-confirmation-card { border: 0; background: #fff; }
+.payment-confirmation-close { position: absolute; z-index: 2; top: 8px; right: 8px; display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: #fff; color: var(--primary-dark); font-size: 28px; line-height: 1; cursor: pointer; touch-action: manipulation; }
+.payment-confirmation-close:hover, .payment-confirmation-close:focus-visible { border-color: var(--primary); outline: 2px solid rgba(53, 64, 143, .35); outline-offset: 2px; }
+.payment-confirmation-done { display: block; width: 100%; min-height: 44px; margin-top: 16px; }
 
 @media (max-width: 520px) {
   .quantity-choice { grid-template-columns: auto 1fr; }
@@ -674,6 +699,13 @@ button, input, select, textarea { font: inherit; }
   .request-total-values { text-align: left; }
   .payment-details div { grid-template-columns: 1fr; gap: 4px; }
   .payment-details dd { text-align: left; }
+  .payment-confirmation-content { grid-template-columns: 1fr; }
+  .payment-confirmation-details > div { grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr); }
+  .payment-confirmation-details dd { text-align: right; }
+  .payment-confirmation-qr { width: min(100%, 220px); justify-self: center; }
+  .mock-payment-qr { width: min(100%, 160px); }
+  .payment-confirmation-dialog { padding: 48px 14px 16px; }
+  .payment-confirmation-dialog .payment-confirmation-card { padding: 14px 8px; }
   .payment-dialog-actions { flex-direction: column-reverse; }
   .payment-dialog-actions button { width: 100%; }
 }

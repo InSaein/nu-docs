@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { PaymentMethod, PaymentStatus } from "@prisma/client";
 import type { DocumentType } from "@prisma/client";
 import { useEffect, useEffectEvent, useRef, useState } from "react";
@@ -38,6 +39,115 @@ const statusLabels: Record<string, string> = {
   COMPLETED: "Completed",
   REJECTED: "Rejected",
 };
+
+type TrackRequest = NonNullable<Awaited<ReturnType<typeof getAuthenticatedDocumentRequestByRequestNumber>>>;
+type TrackPayment = NonNullable<TrackRequest["payment"]>;
+
+const paymentMethodLogos: Record<PaymentMethod, string> = {
+  [PaymentMethod.GCASH]: "/payment-logos/gcash.jpg",
+  [PaymentMethod.MAYA]: "/payment-logos/maya.jpg",
+  [PaymentMethod.GRABPAY]: "/payment-logos/grabpay.jpg",
+  [PaymentMethod.SHOPEEPAY]: "/payment-logos/shopeepay.jpg",
+  [PaymentMethod.COINS_PH]: "/payment-logos/coins-ph.jpg",
+  [PaymentMethod.BPI_ONLINE]: "/payment-logos/bpi-online.jpg",
+  [PaymentMethod.BDO_ONLINE]: "/payment-logos/bdo-online.jpg",
+  [PaymentMethod.METROBANK]: "/payment-logos/metrobank.jpg",
+  [PaymentMethod.UNIONBANK]: "/payment-logos/unionbank.jpg",
+  [PaymentMethod.RCBC]: "/payment-logos/rcbc.jpg",
+  [PaymentMethod.SECURITY_BANK]: "/payment-logos/security-bank.jpg",
+  [PaymentMethod.PNB]: "/payment-logos/pnb.jpg",
+  [PaymentMethod.LANDBANK]: "/payment-logos/landbank.jpg",
+  [PaymentMethod.CHINABANK]: "/payment-logos/chinabank.jpg",
+};
+
+const mockQrCells = Array.from({ length: 21 }, (_, row) =>
+  Array.from({ length: 21 }, (_, column) => {
+    const inFinderArea = (row < 8 && column < 8)
+      || (row < 8 && column >= 13)
+      || (row >= 13 && column < 8);
+    const isTimingLine = row === 6 || column === 6;
+    const isDark = ((row * row + column * column * 3 + row * column * 7 + row * 11 + column * 13) % 11) < 5;
+
+    return !inFinderArea && (isTimingLine ? (row + column) % 2 === 0 : isDark)
+      ? { row, column }
+      : null;
+  }),
+).flat().filter((cell): cell is { row: number; column: number } => cell !== null);
+
+function PaymentMethodLogo({ method }: { method: PaymentMethod }) {
+  const label = getPaymentMethodLabel(method) ?? "Payment method";
+
+  return (
+    <Image
+      className="payment-method-logo"
+      src={paymentMethodLogos[method]}
+      alt={`${label} logo`}
+      width={40}
+      height={32}
+      unoptimized
+    />
+  );
+}
+
+function MockQrCode() {
+  return (
+    <svg className="mock-payment-qr" viewBox="0 0 176 176" role="img" aria-label="Decorative mock QR code. Not usable for payment.">
+      <rect width="176" height="176" fill="#fff" />
+      {mockQrCells.map(({ row, column }) => (
+        <rect key={`${row}-${column}`} x={4 + column * 8} y={4 + row * 8} width="8" height="8" fill="#111" />
+      ))}
+      {[
+        [4, 4],
+        [116, 4],
+        [4, 116],
+      ].map(([x, y]) => (
+        <g key={`${x}-${y}`}>
+          <rect x={x} y={y} width="56" height="56" fill="#111" />
+          <rect x={x + 8} y={y + 8} width="40" height="40" fill="#fff" />
+          <rect x={x + 16} y={y + 16} width="24" height="24" fill="#111" />
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+function PaymentConfirmationCard({ requestNumber, payment }: { requestNumber: string; payment: TrackPayment }) {
+  const amount = payment.amount === null ? "Not available" : `₱${Number(payment.amount).toFixed(2)}`;
+  const methodLabel = payment.method ? getPaymentMethodLabel(payment.method) : null;
+
+  return (
+    <article className="payment-confirmation-card">
+      <div className="payment-confirmation-heading">
+        <div>
+          <span className="eyebrow">Mock payment receipt</span>
+          <h3>Payment Confirmed</h3>
+        </div>
+        <span className="payment-paid-badge"><span aria-hidden="true">✓</span> {payment.status}</span>
+      </div>
+      <p className="payment-confirmation-message">Your payment was recorded successfully. No real payment was processed.</p>
+      <div className="payment-confirmation-content">
+        <dl className="payment-confirmation-details">
+          <div><dt>Amount</dt><dd>{amount}</dd></div>
+          <div>
+            <dt>Payment method</dt>
+            <dd className="payment-confirmation-method">
+              {payment.method && <PaymentMethodLogo method={payment.method} />}
+              <span>{methodLabel ?? "Not available"}</span>
+            </dd>
+          </div>
+          <div><dt>Transaction reference</dt><dd className="payment-reference">{payment.transactionReference ?? "Not available"}</dd></div>
+          <div><dt>Request number</dt><dd className="payment-reference">{requestNumber}</dd></div>
+          <div><dt>Paid on</dt><dd>{payment.paidAt ? formatPaymentDate(payment.paidAt) : "Not available"}</dd></div>
+        </dl>
+        <div className="payment-confirmation-qr">
+          <MockQrCode />
+          <strong>MOCK QR CODE</strong>
+          <span>For demonstration only. This is not a payment code.</span>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
@@ -98,6 +208,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
   const [notFound, setNotFound] = useState(false);
   const [searchError, setSearchError] = useState("");
   const [paymentCheckoutOpen, setPaymentCheckoutOpen] = useState(false);
+  const [paymentConfirmationOpen, setPaymentConfirmationOpen] = useState(false);
   const [documentPreviewType, setDocumentPreviewType] = useState<DocumentType | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<PaymentMethod | null>(null);
   const [paymentSubmitting, setPaymentSubmitting] = useState(false);
@@ -107,6 +218,9 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
   const paymentInProgress = useRef(false);
   const firstPaymentMethodRef = useRef<HTMLInputElement>(null);
   const payNowButtonRef = useRef<HTMLButtonElement>(null);
+  const paymentConfirmationCloseRef = useRef<HTMLButtonElement>(null);
+  const paymentConfirmationTriggerRef = useRef<HTMLButtonElement>(null);
+  const paymentConfirmationDoneRef = useRef<HTMLButtonElement>(null);
   const referenceFromUrl = initialReference.trim();
 
   const searchRequest = async (requestNumber: string) => {
@@ -126,6 +240,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
     setNotFound(false);
     setRequest(null);
     setPaymentCheckoutOpen(false);
+    setPaymentConfirmationOpen(false);
     setDocumentPreviewType(null);
     setSelectedPaymentMethod(null);
     setPaymentError("");
@@ -157,6 +272,17 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
       payNowButtonRef.current?.focus();
     }
   }, [paymentCheckoutOpen]);
+
+  useEffect(() => {
+    if (paymentConfirmationOpen) {
+      paymentConfirmationCloseRef.current?.focus();
+    }
+  }, [paymentConfirmationOpen]);
+
+  const closePaymentConfirmation = () => {
+    setPaymentConfirmationOpen(false);
+    paymentConfirmationTriggerRef.current?.focus();
+  };
 
   const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -218,6 +344,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
         : currentRequest);
       setPaymentSuccess("Simulated payment confirmed successfully.");
       setPaymentCheckoutOpen(false);
+      setPaymentConfirmationOpen(true);
       setSelectedPaymentMethod(null);
     } catch {
       setPaymentError("We could not confirm this simulated payment. Please try again.");
@@ -286,10 +413,20 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
                 <dl className="payment-details">
                   <div><dt>Payment status</dt><dd><strong>{paymentStatus}</strong></dd></div>
                   <div><dt>{paymentIsPaid ? "Amount" : "Amount due"}</dt><dd>{paymentDisplayAmount === null ? "Not available" : `₱${paymentDisplayAmount.toFixed(2)}`}</dd></div>
-                  {paymentIsPaid && request.payment?.method && <div><dt>Payment method</dt><dd>{getPaymentMethodLabel(request.payment.method)}</dd></div>}
-                  {paymentIsPaid && request.payment?.transactionReference && <div><dt>Transaction reference</dt><dd className="payment-reference">{request.payment.transactionReference}</dd></div>}
-                  {paymentIsPaid && request.payment?.paidAt && <div><dt>Paid</dt><dd>{formatPaymentDate(request.payment.paidAt)}</dd></div>}
                 </dl>
+                {paymentIsPaid && request.payment && (
+                  <>
+                    <PaymentConfirmationCard requestNumber={request.requestNumber} payment={request.payment} />
+                    <button
+                      ref={paymentConfirmationTriggerRef}
+                      className="btn btn-secondary payment-receipt-button"
+                      type="button"
+                      onClick={() => setPaymentConfirmationOpen(true)}
+                    >
+                      View payment confirmation
+                    </button>
+                  </>
+                )}
                 {!paymentIsPaid && paymentStatus === PaymentStatus.PENDING && <p className="muted payment-pending-note">A payment is pending confirmation.</p>}
                 {request.status === "PROCESSING" && !paymentIsPaid && !request.payment && requestTotalAmount !== null && (
                   <button
@@ -359,6 +496,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
                           checked={selectedPaymentMethod === option.value}
                           onChange={() => setSelectedPaymentMethod(option.value)}
                         />
+                        <PaymentMethodLogo method={option.value} />
                         <span>{option.label}</span>
                       </label>
                     ))}
@@ -383,6 +521,55 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
                 {paymentSubmitting ? "Processing Payment..." : "Confirm Simulated Payment"}
               </button>
             </div>
+          </section>
+        </div>
+      )}
+      {paymentConfirmationOpen && request?.payment && (
+        <div
+          className="payment-modal-overlay payment-confirmation-overlay"
+          onClick={closePaymentConfirmation}
+          onKeyDown={(event) => {
+            if (event.key === "Escape") closePaymentConfirmation();
+          }}
+        >
+          <section
+            className="payment-dialog payment-confirmation-dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-confirmation-title"
+            tabIndex={-1}
+            onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => {
+              if (event.key !== "Tab") return;
+
+              if (event.shiftKey && document.activeElement === paymentConfirmationCloseRef.current) {
+                event.preventDefault();
+                paymentConfirmationDoneRef.current?.focus();
+              } else if (!event.shiftKey && document.activeElement === paymentConfirmationDoneRef.current) {
+                event.preventDefault();
+                paymentConfirmationCloseRef.current?.focus();
+              }
+            }}
+          >
+            <button
+              ref={paymentConfirmationCloseRef}
+              className="payment-confirmation-close"
+              type="button"
+              aria-label="Close payment confirmation"
+              onClick={closePaymentConfirmation}
+            >
+              <span aria-hidden="true">×</span>
+            </button>
+            <h2 id="payment-confirmation-title" className="sr-only">Payment confirmation</h2>
+            <PaymentConfirmationCard requestNumber={request.requestNumber} payment={request.payment} />
+            <button
+              ref={paymentConfirmationDoneRef}
+              className="btn btn-primary payment-confirmation-done"
+              type="button"
+              onClick={closePaymentConfirmation}
+            >
+              Done
+            </button>
           </section>
         </div>
       )}
