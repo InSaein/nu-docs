@@ -75,6 +75,14 @@ export default async function StudentDashboard() {
           </div>
         </dl>
       </section>
+      <section className="student-quick-action surface">
+        <div>
+          <span className="eyebrow">Need another document?</span>
+          <h2>Request a Document</h2>
+          <p className="muted">Start a new request and submit your purpose online.</p>
+        </div>
+        <Link className="btn btn-primary" href="/student/request">Request a Document</Link>
+      </section>
       <section className="student-dashboard-section">
         <div className="student-section-heading">
           <h2>Request Status</h2>
@@ -164,14 +172,6 @@ export default async function StudentDashboard() {
           )}
         </section>
       </div>
-      <section className="student-quick-action surface">
-        <div>
-          <span className="eyebrow">Need another document?</span>
-          <h2>Request a Document</h2>
-          <p className="muted">Start a new request and submit your purpose online.</p>
-        </div>
-        <Link className="btn btn-primary" href="/student/request">Request a Document</Link>
-      </section>
       <section className="student-dashboard-section surface dashboard-panel">
         <div className="student-section-heading">
           <h2>Recently Completed</h2>

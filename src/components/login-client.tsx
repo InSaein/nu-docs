@@ -155,7 +155,6 @@ function LoginContent({ showDemoLogin }: { showDemoLogin: boolean }) {
   return (
     <main className="hero login-hero">
       <section className="hero-copy">
-        <Link href="/" style={{ fontWeight: 800, color: "var(--primary-dark)" }}>← Back to NU-Docs</Link>
         <span className="eyebrow" style={{ marginTop: 80 }}>{mode === "admin" ? "Registrar access" : "Welcome back"}</span>
         <h1 className="display-font hero-title">
           {mode === "admin" ? <>Admin<br />portal.</> : <>Your campus<br />is moving.</>}
