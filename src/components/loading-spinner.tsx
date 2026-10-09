@@ -1,22 +1,29 @@
 "use client";
 
 import { useEffect } from "react";
-import { loadingScreenEnabled } from "@/lib/loading-screen";
 
-export function LoadingSpinner({ label = "Loading", inline = false }: { label?: string; inline?: boolean }) {
+export function LoadingSpinner({
+  label = "Loading",
+  inline = false,
+  fullPageEnabled = true,
+}: {
+  label?: string;
+  inline?: boolean;
+  fullPageEnabled?: boolean;
+}) {
   useEffect(() => {
-    if (inline || !loadingScreenEnabled) return;
+    if (inline || !fullPageEnabled) return;
     window.dispatchEvent(new CustomEvent("nu-docs:route-loading", { detail: true }));
     return () => {
       window.dispatchEvent(new CustomEvent("nu-docs:route-loading", { detail: false }));
     };
-  }, [inline]);
+  }, [inline, fullPageEnabled]);
 
   if (inline) {
     return <span className="route-loading-spinner route-loading-spinner-inline" aria-hidden="true" />;
   }
 
-  if (!loadingScreenEnabled) {
+  if (!fullPageEnabled) {
     return null;
   }
 

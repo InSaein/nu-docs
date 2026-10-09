@@ -1,1 +1,3 @@
-export const loadingScreenEnabled = process.env.NEXT_PUBLIC_ENABLE_LOADING_SCREEN !== "false";
+export function isLoadingScreenEnabled() {
+  return process.env.ENABLE_LOADING_SCREEN !== "false";
+}

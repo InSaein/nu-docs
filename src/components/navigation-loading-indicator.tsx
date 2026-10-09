@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { loadingScreenEnabled } from "@/lib/loading-screen";
 
 const loadingFavicon = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="11" fill="none" stroke="#d9dced" stroke-width="4"/><path d="M16 5a11 11 0 0 1 10.7 8.5" fill="none" stroke="#35408F" stroke-linecap="round" stroke-width="4"/><circle cx="16" cy="16" r="2" fill="#F0D234"/></svg>')}`;
 
@@ -91,8 +90,8 @@ function NavigationLoadingObserver() {
   return null;
 }
 
-export function NavigationLoadingIndicator() {
-  if (!loadingScreenEnabled) return null;
+export function NavigationLoadingIndicator({ enabled }: { enabled: boolean }) {
+  if (!enabled) return null;
 
   return <Suspense fallback={null}><NavigationLoadingObserver /></Suspense>;
 }
