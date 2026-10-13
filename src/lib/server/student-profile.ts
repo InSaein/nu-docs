@@ -2,11 +2,10 @@
 
 import { Prisma } from "@prisma/client";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
-import { getCurrentSession } from "@/lib/auth";
 import { isValidCourse, isValidNameExtension, normalizeOptionalNameExtension } from "@/lib/course-options";
 import { formatDisplayName } from "@/lib/display-name";
 import { getStudentEmailValidationError } from "@/lib/registration-validation";
+import { requirePortalRole } from "@/lib/server/authorization";
 import { prisma } from "@/lib/prisma";
 
 export type StudentProfileValues = {
@@ -30,10 +29,7 @@ export type StudentProfileUpdateResult = {
 const maximumNameLength = 100;
 
 export async function updateStudentProfile(formData: FormData): Promise<StudentProfileUpdateResult> {
-  const session = await getCurrentSession();
-  if (!session || session.role !== "STUDENT") {
-    redirect("/login");
-  }
+  const session = await requirePortalRole("STUDENT");
 
   const firstName = String(formData.get("firstName") ?? "").trim();
   const middleName = String(formData.get("middleName") ?? "").trim();

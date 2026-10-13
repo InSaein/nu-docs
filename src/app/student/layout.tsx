@@ -1,11 +1,11 @@
 import { StudentIdentityProvider, type StudentPreviewProfile } from "@/components/student-portal-header";
-import { getCurrentSession } from "@/lib/auth";
 import { formatDisplayName, getStudentFirstName, getStudentInitials } from "@/lib/display-name";
+import { requirePortalRole } from "@/lib/server/authorization";
 import { getUserById } from "@/lib/server/users";
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
-  const session = await getCurrentSession();
-  const user = session?.role === "STUDENT" ? await getUserById(session.userId) : null;
+  const session = await requirePortalRole("STUDENT");
+  const user = await getUserById(session.userId);
   const identity = user
     ? {
         firstName: getStudentFirstName(user),

@@ -92,7 +92,7 @@ button, input, select, textarea { font: inherit; }
 .login-demo-button { border: 1px solid var(--primary); background: #fff; color: var(--primary); }
 .login-demo-button:hover { background: var(--primary-soft); }
 .login-demo-button:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
-.login-role-toggle { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; width: 100%; margin-bottom: 25px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: #f5f6f9; }
+.login-role-toggle { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; width: 100%; margin-bottom: 25px; padding: 4px; border: 1px solid var(--line); border-radius: 8px; background: #f5f6f9; }
 .login-role-option { display: flex; min-width: 0; min-height: 40px; align-items: center; justify-content: center; gap: 8px; padding: 7px 10px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--ink-soft); font-size: 13px; font-weight: 700; cursor: pointer; }
 .login-role-option[data-active="true"] { border-color: rgba(53, 64, 143, .12); background: #fff; color: var(--primary); box-shadow: 0 1px 3px rgba(37, 45, 104, .12); }
 .login-role-option:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
@@ -919,4 +919,58 @@ button, input, select, textarea { font: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
   .portal-navigation-drawer { transition: none; }
+}
+
+.treasury-portal .treasury-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.treasury-total-collected { white-space: nowrap; }
+.treasury-payment-filters { flex-wrap: wrap; align-items: center; }
+.treasury-payment-filters .toolbar-search { min-width: min(100%, 270px); }
+.treasury-date-filter { display: flex; align-items: center; gap: 7px; color: var(--ink-soft); font-size: 12px; white-space: nowrap; }
+.treasury-date-filter input { min-width: 130px; border: 1px solid #cfcfcf; background: #fff; padding: 9px; color: var(--foreground); }
+.treasury-clear-filters { color: var(--primary); font-size: 12px; font-weight: 700; }
+.treasury-validation-error { margin: 0 0 16px; }
+.treasury-table .treasury-document-cell { white-space: normal; }
+.treasury-apply-page-size { padding: 8px 10px !important; }
+.treasury-payment-detail { grid-template-columns: minmax(0, 1.2fr) minmax(290px, .8fr); }
+.treasury-payment-items { display: grid; gap: 12px; }
+.treasury-payment-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid #edf0f3; padding-bottom: 11px; font-size: 12px; }
+.treasury-payment-item > div { display: grid; gap: 5px; }
+.treasury-payment-item > div span { color: var(--ink-soft); }
+.treasury-payment-item > strong { white-space: nowrap; }
+.treasury-payment-totals { margin-top: 18px; border-top: 1px solid var(--line); padding-top: 12px; }
+.treasury-payment-meta { align-self: start; }
+.treasury-verification-panel { display: grid; gap: 12px; margin-top: 20px; }
+.treasury-verification-panel > p { margin: 0; font-size: 12px; }
+.treasury-rejection-form { display: grid; gap: 10px; border-top: 1px solid var(--line); padding-top: 15px; }
+.treasury-rejection-form .field { margin: 0; }
+.treasury-rejection-form textarea { min-height: 90px; }
+.treasury-rejection-form .btn-danger { justify-self: start; }
+.payment-rejected-badge { background: #fbe4e0; color: #a03d3d; }
+.payment-rejection-reason { margin: 0 0 14px; }
+.payment-retry-note { margin-top: 12px; }
+.treasury-error-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; margin-top: 18px; }
+.treasury-report-filters { flex-wrap: wrap; align-items: center; }
+.treasury-report-filters input:not([type="hidden"]) { min-width: 190px; border: 1px solid #cfcfcf; background: #fff; padding: 9px; color: var(--foreground); }
+.treasury-report-note { margin: 12px 0 18px; font-size: 12px; }
+.treasury-report-section { margin-top: 18px; }
+.treasury-report-section h2 { margin: 0 0 16px; font-size: 16px; }
+.treasury-report-links { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 18px; }
+.treasury-audit-id { display: block; margin-top: 4px; color: var(--ink-soft); font-size: 10px; overflow-wrap: anywhere; }
+
+@media (max-width: 900px) {
+  .treasury-portal .treasury-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .treasury-payment-detail { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 760px) {
+  .treasury-payment-filters .toolbar-search { flex-basis: 100%; }
+  .treasury-payment-filters select, .treasury-payment-filters .btn { flex: 1 1 100%; }
+  .treasury-report-filters input:not([type="hidden"]), .treasury-report-filters select, .treasury-report-filters .btn { flex: 1 1 100%; }
+  .treasury-date-filter { flex: 1 1 calc(50% - 8px); }
+  .treasury-date-filter input { min-width: 0; width: 100%; }
+}
+
+@media (max-width: 520px) {
+  .treasury-portal .treasury-stats { grid-template-columns: 1fr; }
+  .treasury-payment-filters .treasury-date-filter { width: 100%; margin-top: 9px; }
 }

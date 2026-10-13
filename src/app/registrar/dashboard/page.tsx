@@ -24,7 +24,7 @@ type RegistrarRequest = {
   documentTypes: DocumentType[];
   submitted: string;
   status: string;
-  paymentStatus: "PAID" | "PENDING" | null;
+  paymentStatus: "PAID" | "PENDING" | "REJECTED" | null;
 };
 
 export default function RegistrarDashboard() {
@@ -55,7 +55,10 @@ export default function RegistrarDashboard() {
     `${request.id} ${request.student} ${request.document}`.toLowerCase().includes(query.toLowerCase())
     && (status === "All statuses" || request.status === status)
     && (document === "All documents" || request.documentTypes.some((type) => documentLabels[type] === document))
-    && (payment === "All Payments" || (payment === "Paid" ? request.paymentStatus === "PAID" : request.paymentStatus === null))
+    && (
+      payment === "All Payments"
+      || (payment === "Unpaid" ? request.paymentStatus === null : request.paymentStatus === payment)
+    )
   );
   const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
   const visiblePage = Math.min(currentPage, totalPages);
@@ -86,7 +89,7 @@ export default function RegistrarDashboard() {
           <option>All documents</option><option>Transcript of Records</option><option>Certificate of Enrollment</option><option>Certificate of Registration</option><option>Certified True Copy of Grades</option>
         </select>
         <select value={payment} onChange={(event) => { setPayment(event.target.value); setCurrentPage(1); }} aria-label="Filter by payment">
-          <option>All Payments</option><option>Paid</option><option>Unpaid</option>
+          <option value="All Payments">All Payments</option><option value="PAID">Paid</option><option value="PENDING">Pending Treasury review</option><option value="REJECTED">Rejected</option><option value="Unpaid">Unpaid</option>
         </select>
       </div>
       <div className="surface table-wrap">
@@ -100,7 +103,7 @@ export default function RegistrarDashboard() {
                 <td>{request.document}</td>
                 <td>{request.submitted}</td>
                 <td><StatusPill tone={request.status}>{request.status}</StatusPill></td>
-                <td><StatusPill tone={request.paymentStatus === "PAID" ? "approved" : request.paymentStatus === "PENDING" ? "pending" : "cancelled"}>{request.paymentStatus === "PAID" ? "✓ Paid" : request.paymentStatus === "PENDING" ? "Pending" : "Unpaid"}</StatusPill></td>
+                <td><StatusPill tone={request.paymentStatus === "PAID" ? "approved" : request.paymentStatus === "PENDING" ? "pending" : request.paymentStatus === "REJECTED" ? "rejected" : "cancelled"}>{request.paymentStatus === "PAID" ? "✓ Paid" : request.paymentStatus === "PENDING" ? "Pending" : request.paymentStatus === "REJECTED" ? "Rejected" : "Unpaid"}</StatusPill></td>
                 <td>Registrar queue</td>
                 <td><Link className="link" href={`/registrar/requests/${encodeURIComponent(request.id)}`}>Open →</Link></td>
               </tr>

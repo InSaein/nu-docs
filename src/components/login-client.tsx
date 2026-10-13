@@ -4,9 +4,9 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useActionState, useRef, useState } from "react";
 import { LoadingSpinner } from "@/components/loading-spinner";
-import { adminLogin, login, type LoginState } from "@/lib/server/auth";
+import { adminLogin, login, treasuryDemoLogin, treasuryLogin, type LoginState } from "@/lib/server/auth";
 
-type LoginMode = "student" | "admin";
+type LoginMode = "student" | "admin" | "treasury";
 
 const initialState: LoginState = {};
 
@@ -36,13 +36,20 @@ function LoginForm({
   onModeChange: (mode: LoginMode) => void;
 }) {
   const authenticate = (previousState: LoginState, formData: FormData) =>
-    mode === "admin" ? adminLogin(previousState, formData) : login(previousState, formData);
+    mode === "admin"
+      ? adminLogin(previousState, formData)
+      : mode === "treasury"
+        ? treasuryLogin(previousState, formData)
+        : login(previousState, formData);
   const [state, formAction, pending] = useActionState(authenticate, initialState);
+  const [treasuryDemoState, treasuryDemoAction, treasuryDemoPending] = useActionState(treasuryDemoLogin, initialState);
   const formRef = useRef<HTMLFormElement>(null);
   const identifierRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
   const isAdmin = mode === "admin";
-  const identifierId = isAdmin ? "admin-identifier" : "student-number";
+  const isTreasury = mode === "treasury";
+  const isStaff = isAdmin || isTreasury;
+  const identifierId = isStaff ? `${mode}-identifier` : "student-number";
 
   function submitDemoLogin() {
     if (pending || !formRef.current || !identifierRef.current || !passwordRef.current) {
@@ -60,9 +67,9 @@ function LoginForm({
         <button
           className="login-role-option"
           type="button"
-          data-active={!isAdmin}
-          aria-pressed={!isAdmin}
-          disabled={pending}
+          data-active={mode === "student"}
+          aria-pressed={mode === "student"}
+          disabled={pending || treasuryDemoPending}
           onClick={() => onModeChange("student")}
         >
           <RoleIcon mode="student" />
@@ -73,30 +80,43 @@ function LoginForm({
           type="button"
           data-active={isAdmin}
           aria-pressed={isAdmin}
-          disabled={pending}
+          disabled={pending || treasuryDemoPending}
           onClick={() => onModeChange("admin")}
         >
           <RoleIcon mode="admin" />
           <span>Admin</span>
         </button>
+        <button
+          className="login-role-option"
+          type="button"
+          data-active={isTreasury}
+          aria-pressed={isTreasury}
+          disabled={pending || treasuryDemoPending}
+          onClick={() => onModeChange("treasury")}
+        >
+          <RoleIcon mode="admin" />
+          <span>Treasury</span>
+        </button>
       </div>
       <span className="brand-mark">N</span>
-      <h1 className="display-font">{isAdmin ? "Admin sign in" : "Sign in"}</h1>
+      <h1 className="display-font">{isTreasury ? "Treasury sign in" : isAdmin ? "Admin sign in" : "Sign in"}</h1>
       <p className="muted login-description">
-        {isAdmin
-          ? "Use your National University administrator account."
-          : "Use your National University account."}
+        {isTreasury
+          ? "Use your National University Treasury account."
+          : isAdmin
+            ? "Use your National University administrator account."
+            : "Use your National University account."}
       </p>
-      {registered && !isAdmin && <p className="notice" role="status">Account created successfully. Please log in.</p>}
+      {registered && !isStaff && <p className="notice" role="status">Account created successfully. Please log in.</p>}
       <div className="field">
-        <label htmlFor={identifierId}>{isAdmin ? "Admin ID" : "Student Number"}</label>
+        <label htmlFor={identifierId}>{isTreasury ? "Treasury ID" : isAdmin ? "Admin ID" : "Student Number"}</label>
         <input
           id={identifierId}
           ref={identifierRef}
           name="studentNumber"
           autoComplete="username"
           required
-          placeholder={isAdmin ? "ADMIN-00001" : "2026-00001"}
+          placeholder={isTreasury ? "Treasury ID" : isAdmin ? "ADMIN-00001" : "2026-00001"}
         />
       </div>
       <div className="field">
@@ -111,30 +131,47 @@ function LoginForm({
           placeholder={isAdmin ? "admin" : "password"}
         />
       </div>
-      {state.error && <p className="notice notice-blue" role="alert">{state.error}</p>}
+      {(isTreasury ? state.error ?? treasuryDemoState.error : state.error) && (
+        <p className="notice notice-blue" role="alert">
+          {isTreasury ? state.error ?? treasuryDemoState.error : state.error}
+        </p>
+      )}
       <button
         className="btn btn-primary student-action-loading-button"
         type="submit"
-        disabled={pending}
-        aria-busy={pending}
+        disabled={pending || treasuryDemoPending}
+        aria-busy={pending || treasuryDemoPending}
         style={{ width: "100%", marginTop: 6 }}
       >
         {pending && <LoadingSpinner inline label="Logging in" />}
         <span aria-live="polite">{pending ? "Logging in..." : "Login"}</span>
       </button>
-      {showDemoLogin && (
+      {showDemoLogin && !isTreasury && (
         <button
           className="btn login-demo-button"
           type="button"
           onClick={submitDemoLogin}
-          disabled={pending}
+          disabled={pending || treasuryDemoPending}
           aria-label={`Demo Login as ${isAdmin ? "Admin" : "Student"}`}
           style={{ width: "100%", marginTop: 9 }}
         >
           Demo Login
         </button>
       )}
-      {!isAdmin && (
+      {showDemoLogin && isTreasury && (
+        <button
+          className="btn login-demo-button"
+          type="submit"
+          formAction={treasuryDemoAction}
+          formNoValidate
+          disabled={pending || treasuryDemoPending}
+          aria-busy={treasuryDemoPending}
+          style={{ width: "100%", marginTop: 9 }}
+        >
+          {treasuryDemoPending ? "Logging in..." : "Treasury Demo Login"}
+        </button>
+      )}
+      {!isStaff && (
         <>
           <Link className="link" href="/register" style={{ display: "block", textAlign: "center", marginTop: 18 }}>
             Create an account
@@ -143,26 +180,38 @@ function LoginForm({
         </>
       )}
       {isAdmin && <p className="muted login-footnote">Administrator access is restricted to authorized staff.</p>}
+      {isTreasury && <p className="muted login-footnote">Treasury access is restricted to authorized staff.</p>}
     </form>
   );
 }
 
 function LoginContent({ showDemoLogin }: { showDemoLogin: boolean }) {
   const searchParams = useSearchParams();
-  const [mode, setMode] = useState<LoginMode>(searchParams.get("mode") === "admin" ? "admin" : "student");
+  const initialMode = searchParams.get("mode");
+  const [mode, setMode] = useState<LoginMode>(
+    initialMode === "admin" || initialMode === "treasury" ? initialMode : "student",
+  );
   const registered = searchParams.get("registered") === "1";
 
   return (
     <main className="hero login-hero">
       <section className="hero-copy">
-        <span className="eyebrow" style={{ marginTop: 80 }}>{mode === "admin" ? "Registrar access" : "Welcome back"}</span>
+        <span className="eyebrow" style={{ marginTop: 80 }}>
+          {mode === "treasury" ? "Treasury access" : mode === "admin" ? "Registrar access" : "Welcome back"}
+        </span>
         <h1 className="display-font hero-title">
-          {mode === "admin" ? <>Admin<br />portal.</> : <>Your campus<br />is moving.</>}
+          {mode === "treasury"
+            ? <>Treasury<br />portal.</>
+            : mode === "admin"
+              ? <>Admin<br />portal.</>
+              : <>Your campus<br />is moving.</>}
         </h1>
         <p>
-          {mode === "admin"
-            ? "Sign in to review and process student document requests."
-            : "Sign in to request documents and check your latest updates."}
+          {mode === "treasury"
+            ? "Sign in to review payments and view Treasury reports."
+            : mode === "admin"
+              ? "Sign in to review and process student document requests."
+              : "Sign in to request documents and check your latest updates."}
         </p>
       </section>
       <section className="login-panel">

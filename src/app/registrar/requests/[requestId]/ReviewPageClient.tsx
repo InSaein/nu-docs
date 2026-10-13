@@ -40,6 +40,8 @@ type ReviewPageClientProps = {
 
 export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
   const [request, setRequest] = useState<Awaited<ReturnType<typeof getDocumentRequestByRequestNumber>>>(null);
+  const [requestLoadError, setRequestLoadError] = useState("");
+  const [loadingRequest, setLoadingRequest] = useState(true);
   const [status, setStatus] = useState<keyof typeof statusValues>("Submitted");
   const [notes, setNotes] = useState("");
   const [statusError, setStatusError] = useState("");
@@ -53,14 +55,23 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
 
   useEffect(() => {
     let active = true;
-    getDocumentRequestByRequestNumber(requestId).then((databaseRequest) => {
-      if (!active) return;
-      setRequest(databaseRequest);
-      if (databaseRequest) {
-        setStatus(statusLabels[databaseRequest.status]);
-        setNotes(databaseRequest.remarks ?? "");
-      }
-    });
+    getDocumentRequestByRequestNumber(requestId)
+      .then((databaseRequest) => {
+        if (!active) return;
+        setRequest(databaseRequest);
+        if (databaseRequest) {
+          setStatus(statusLabels[databaseRequest.status]);
+          setNotes(databaseRequest.remarks ?? "");
+        } else {
+          setRequestLoadError("This document request could not be found.");
+        }
+      })
+      .catch(() => {
+        if (active) setRequestLoadError("Unable to load this document request. Please return to the queue and try again.");
+      })
+      .finally(() => {
+        if (active) setLoadingRequest(false);
+      });
     return () => {
       active = false;
     };
@@ -108,7 +119,16 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
   };
 
   if (!request) {
-    return <RegistrarPortalShell><RegistrarBreadcrumb currentPage="Request Review" /><PageHeader eyebrow="Registrar Portal / Request review" title={requestId} description="Review student information, requirements, and request status." /><div className="surface pad">Loading request...</div></RegistrarPortalShell>;
+    return (
+      <RegistrarPortalShell>
+        <RegistrarBreadcrumb currentPage="Request Review" />
+        <PageHeader eyebrow="Registrar Portal / Request review" title={requestId} description="Review student information, requirements, and request status." />
+        <div className="surface pad" role={requestLoadError ? "alert" : "status"}>
+          {loadingRequest ? "Loading request..." : requestLoadError || "Unable to load this document request."}
+        </div>
+        {!loadingRequest && <Link className="back-link" href="/registrar/dashboard">← Back to request queue</Link>}
+      </RegistrarPortalShell>
+    );
   }
 
   const document = documentLabels[request.documentType] ?? request.documentType;

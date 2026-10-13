@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { PaymentMethod, PaymentStatus } from "@prisma/client";
 import type { DocumentType } from "@prisma/client";
-import { useEffect, useEffectEvent, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { DocumentPreviewModal } from "@/components/document-preview-modal";
 import { LoadingSpinner } from "@/components/loading-spinner";
@@ -12,7 +12,7 @@ import { useStudentIdentity } from "@/components/student-portal-header";
 import { documentLabels } from "@/lib/document-pricing";
 import { getPaymentMethodLabel, paymentOptions } from "@/lib/payment-options";
 import { StudentBreadcrumb, StudentPortalShell } from "@/components/student-portal-shell";
-import { confirmMockPayment, getAuthenticatedDocumentRequestByRequestNumber } from "@/lib/server/requests";
+import { getAuthenticatedDocumentRequestByRequestNumber, submitMockPayment } from "@/lib/server/requests";
 
 export type RecentRequestSummary = {
   requestNumber: string;
@@ -114,20 +114,32 @@ function MockQrCode() {
 function PaymentConfirmationCard({ requestNumber, payment }: { requestNumber: string; payment: TrackPayment }) {
   const amount = payment.amount === null ? "Not available" : `₱${Number(payment.amount).toFixed(2)}`;
   const methodLabel = payment.method ? getPaymentMethodLabel(payment.method) : null;
+  const isPaid = payment.status === PaymentStatus.PAID;
+  const isRejected = payment.status === PaymentStatus.REJECTED;
+  const heading = isPaid ? "Payment Confirmed" : isRejected ? "Payment Rejected" : "Pending Treasury Verification";
 
   return (
     <article className="payment-confirmation-card">
       <div className="payment-confirmation-heading">
         <div>
-          <span className="eyebrow">Mock payment receipt</span>
-          <h3>Payment Confirmed</h3>
+          <span className="eyebrow">Simulated payment status</span>
+          <h3>{heading}</h3>
         </div>
-        <span className="payment-paid-badge"><span aria-hidden="true">✓</span> {payment.status}</span>
+        <span className={`payment-paid-badge${isRejected ? " payment-rejected-badge" : ""}`}>{isPaid ? "✓ " : ""}{payment.status}</span>
       </div>
-      <p className="payment-confirmation-message">Your payment was recorded successfully. No real payment was processed.</p>
+      <p className="payment-confirmation-message">
+        {isPaid
+          ? "Treasury confirmed this simulated payment. No real payment was processed."
+          : isRejected
+            ? "Treasury rejected this simulated payment. No refund or external payment reversal has occurred."
+            : "Your simulated payment details were submitted and are awaiting Treasury review. No real payment was processed."}
+      </p>
+      {isRejected && payment.rejectionReason && (
+        <div className="notice notice-blue payment-rejection-reason"><strong>Rejection reason</strong><br />{payment.rejectionReason}</div>
+      )}
       <div className="payment-confirmation-content">
         <dl className="payment-confirmation-details">
-          <div><dt>Amount</dt><dd>{amount}</dd></div>
+          <div><dt>{isPaid ? "Recorded amount" : "Amount submitted"}</dt><dd>{amount}</dd></div>
           <div>
             <dt>Payment method</dt>
             <dd className="payment-confirmation-method">
@@ -135,15 +147,15 @@ function PaymentConfirmationCard({ requestNumber, payment }: { requestNumber: st
               <span>{methodLabel ?? "Not available"}</span>
             </dd>
           </div>
-          <div><dt>Transaction reference</dt><dd className="payment-reference">{payment.transactionReference ?? "Not available"}</dd></div>
+          <div><dt>Simulated application reference</dt><dd className="payment-reference">{payment.transactionReference ?? "Not available"}</dd></div>
           <div><dt>Request number</dt><dd className="payment-reference">{requestNumber}</dd></div>
-          <div><dt>Paid on</dt><dd>{payment.paidAt ? formatPaymentDate(payment.paidAt) : "Not available"}</dd></div>
+          <div><dt>{isPaid ? "Confirmed on" : "Submitted on"}</dt><dd>{isPaid && payment.paidAt ? formatPaymentDate(payment.paidAt) : formatPaymentDate(payment.createdAt)}</dd></div>
         </dl>
-        <div className="payment-confirmation-qr">
+        {isPaid && <div className="payment-confirmation-qr">
           <MockQrCode />
           <strong>MOCK QR CODE</strong>
           <span>For demonstration only. This is not a payment code.</span>
-        </div>
+        </div>}
       </div>
     </article>
   );
@@ -257,12 +269,26 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
     }
   };
 
-  const loadReferenceFromUrl = useEffectEvent((reference: string) => {
-    void searchRequest(reference);
-  });
-
   useEffect(() => {
-    if (referenceFromUrl) loadReferenceFromUrl(referenceFromUrl);
+    if (!referenceFromUrl) return;
+
+    let cancelled = false;
+    void getAuthenticatedDocumentRequestByRequestNumber(referenceFromUrl)
+      .then((databaseRequest) => {
+        if (cancelled) return;
+        setRequest(databaseRequest);
+        setNotFound(!databaseRequest);
+      })
+      .catch(() => {
+        if (!cancelled) setSearchError("Unable to search right now. Please try again.");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
   }, [referenceFromUrl]);
 
   useEffect(() => {
@@ -308,6 +334,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
       : null;
   const paymentStatus = request?.payment?.status ?? "UNPAID";
   const paymentIsPaid = paymentStatus === PaymentStatus.PAID;
+  const paymentIsRejected = paymentStatus === PaymentStatus.REJECTED;
   const paymentDisplayAmount = paymentIsPaid && request?.payment?.amount !== null && request?.payment?.amount !== undefined
     ? Number(request.payment.amount)
     : requestTotalAmount;
@@ -332,7 +359,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
     setPaymentError("");
 
     try {
-      const result = await confirmMockPayment(request.requestNumber, selectedPaymentMethod);
+      const result = await submitMockPayment(request.requestNumber, selectedPaymentMethod);
 
       if (!result.success) {
         setPaymentError(result.error);
@@ -342,12 +369,12 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
       setRequest((currentRequest) => currentRequest
         ? { ...currentRequest, payment: result.payment }
         : currentRequest);
-      setPaymentSuccess("Simulated payment confirmed successfully.");
+      setPaymentSuccess("Simulated payment submitted for Treasury verification.");
       setPaymentCheckoutOpen(false);
       setPaymentConfirmationOpen(true);
       setSelectedPaymentMethod(null);
     } catch {
-      setPaymentError("We could not confirm this simulated payment. Please try again.");
+      setPaymentError("We could not submit this simulated payment. Please try again.");
     } finally {
       paymentInProgress.current = false;
       setPaymentSubmitting(false);
@@ -411,23 +438,22 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
               <section className="track-section payment-section" aria-labelledby="payment-heading">
                 <h2 id="payment-heading">Payment</h2>
                 <dl className="payment-details">
-                  <div><dt>Payment status</dt><dd><strong>{paymentStatus}</strong></dd></div>
+                  <div><dt>Payment status</dt><dd><strong>{paymentIsPaid ? "Confirmed by Treasury" : paymentIsRejected ? "Rejected by Treasury" : request.payment ? "Pending Treasury verification" : "Not submitted"}</strong></dd></div>
                   <div><dt>{paymentIsPaid ? "Amount" : "Amount due"}</dt><dd>{paymentDisplayAmount === null ? "Not available" : `₱${paymentDisplayAmount.toFixed(2)}`}</dd></div>
                 </dl>
+                {request.payment && <PaymentConfirmationCard requestNumber={request.requestNumber} payment={request.payment} />}
                 {paymentIsPaid && request.payment && (
-                  <>
-                    <PaymentConfirmationCard requestNumber={request.requestNumber} payment={request.payment} />
-                    <button
-                      ref={paymentConfirmationTriggerRef}
-                      className="btn btn-secondary payment-receipt-button"
-                      type="button"
-                      onClick={() => setPaymentConfirmationOpen(true)}
-                    >
-                      View payment confirmation
-                    </button>
-                  </>
+                  <button
+                    ref={paymentConfirmationTriggerRef}
+                    className="btn btn-secondary payment-receipt-button"
+                    type="button"
+                    onClick={() => setPaymentConfirmationOpen(true)}
+                  >
+                    View payment confirmation
+                  </button>
                 )}
-                {!paymentIsPaid && paymentStatus === PaymentStatus.PENDING && <p className="muted payment-pending-note">A payment is pending confirmation.</p>}
+                {request.payment?.status === PaymentStatus.PENDING && <p className="muted payment-pending-note">Your payment submission is awaiting Treasury review. Request processing status is shown separately above.</p>}
+                {paymentIsRejected && <p className="notice notice-blue payment-retry-note">A corrected payment cannot be submitted for this request yet. Please contact Treasury for assistance.</p>}
                 {request.status === "PROCESSING" && !paymentIsPaid && !request.payment && requestTotalAmount !== null && (
                   <button
                     ref={payNowButtonRef}
@@ -518,7 +544,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
                 Cancel
               </button>
               <button className="btn btn-primary" type="button" disabled={!selectedPaymentMethod || paymentSubmitting} onClick={() => void confirmPayment()}>
-                {paymentSubmitting ? "Processing Payment..." : "Confirm Simulated Payment"}
+                {paymentSubmitting ? "Submitting..." : "Submit for Treasury Review"}
               </button>
             </div>
           </section>
@@ -560,7 +586,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
             >
               <span aria-hidden="true">×</span>
             </button>
-            <h2 id="payment-confirmation-title" className="sr-only">Payment confirmation</h2>
+            <h2 id="payment-confirmation-title" className="sr-only">Payment submission details</h2>
             <PaymentConfirmationCard requestNumber={request.requestNumber} payment={request.payment} />
             <button
               ref={paymentConfirmationDoneRef}

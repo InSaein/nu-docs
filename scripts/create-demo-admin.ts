@@ -20,6 +20,14 @@ async function main() {
   const prisma = new PrismaClient({ adapter });
 
   try {
+    const existingUser = await prisma.user.findUnique({
+      where: { studentNumber },
+      select: { role: true },
+    });
+    if (existingUser && existingUser.role !== UserRole.REGISTRAR) {
+      throw new Error("The configured demo administrator identifier belongs to a non-Registrar account.");
+    }
+
     const passwordHash = await bcrypt.hash(password, 12);
 
     await prisma.user.upsert({
@@ -33,7 +41,7 @@ async function main() {
         course: null,
         email,
         password: passwordHash,
-        role: UserRole.ADMIN,
+        role: UserRole.REGISTRAR,
       },
       update: {
         name,
@@ -43,7 +51,6 @@ async function main() {
         course: null,
         email,
         password: passwordHash,
-        role: UserRole.ADMIN,
       },
     });
 
@@ -53,7 +60,7 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+main().catch(() => {
   console.error("Failed to create demo admin.");
   process.exit(1);
 });

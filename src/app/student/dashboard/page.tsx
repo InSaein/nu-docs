@@ -6,7 +6,6 @@ import { getCurrentSession } from "@/lib/auth";
 import { getNotificationsForUser } from "@/lib/server/notifications";
 import { getRequestHistoryForStudent } from "@/lib/server/requests";
 import { getUserById } from "@/lib/server/users";
-import { formatDisplayName } from "@/lib/display-name";
 
 const documentLabels: Record<string, string> = {
   TOR: "Transcript of Records",
@@ -39,8 +38,8 @@ export default async function StudentDashboard() {
 
   const [user, requests, notifications] = await Promise.all([
     getUserById(session.userId),
-    getRequestHistoryForStudent(session.userId),
-    getNotificationsForUser(session.userId),
+    getRequestHistoryForStudent(),
+    getNotificationsForUser(),
   ]);
 
   if (!user) {
@@ -163,6 +162,10 @@ export default async function StudentDashboard() {
                         ? "Request status update"
                         : notification.type === "PAYMENT_CONFIRMED"
                           ? "Payment confirmation"
+                          : notification.type === "PAYMENT_REJECTED"
+                            ? "Payment rejection"
+                            : notification.type === "PAYMENT_SUBMITTED"
+                              ? "Payment submitted for review"
                           : "Request submitted"}
                     </small>
                   </div>

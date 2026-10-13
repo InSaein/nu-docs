@@ -2,9 +2,8 @@
 
 import { randomBytes, randomUUID } from "node:crypto";
 import { DocumentType, NotificationType, PaymentStatus, Prisma, RequestStatus } from "@prisma/client";
-import { redirect } from "next/navigation";
 import { documentPricing } from "@/lib/document-pricing";
-import { getCurrentSession } from "@/lib/auth";
+import { requirePortalRole } from "@/lib/server/authorization";
 import { isPaymentMethod } from "@/lib/payment-options";
 import { prisma } from "@/lib/prisma";
 
@@ -61,6 +60,8 @@ function serializeDocumentRequest(request: RequestWithRelations) {
           amount: request.payment.amount?.toString() ?? null,
           transactionReference: request.payment.transactionReference,
           paidAt: request.payment.paidAt?.toISOString() ?? null,
+          rejectionReason: request.payment.rejectionReason,
+          reviewedAt: request.payment.reviewedAt?.toISOString() ?? null,
           createdAt: request.payment.createdAt.toISOString(),
           updatedAt: request.payment.updatedAt.toISOString(),
         }
@@ -73,6 +74,8 @@ function serializeDocumentRequest(request: RequestWithRelations) {
 }
 
 export async function getDocumentRequests() {
+  await requirePortalRole("REGISTRAR");
+
   return prisma.documentRequest.findMany({
     select: {
       requestNumber: true,
@@ -87,9 +90,9 @@ export async function getDocumentRequests() {
   });
 }
 
-export async function getDocumentRequestByRequestNumber(requestNumber: string) {
+async function findDocumentRequestByRequestNumber(requestNumber: string, studentId?: string) {
   return prisma.documentRequest.findUnique({
-    where: { requestNumber },
+    where: { requestNumber, ...(studentId ? { studentId } : {}) },
     include: {
       student: { select: studentSelect },
       requestItems: true,
@@ -100,9 +103,16 @@ export async function getDocumentRequestByRequestNumber(requestNumber: string) {
   }).then((request) => request ? serializeDocumentRequest(request) : null);
 }
 
-export async function getRequestHistoryForStudent(studentId: string) {
+export async function getDocumentRequestByRequestNumber(requestNumber: string) {
+  await requirePortalRole("REGISTRAR");
+  return findDocumentRequestByRequestNumber(requestNumber);
+}
+
+export async function getRequestHistoryForStudent() {
+  const session = await requirePortalRole("STUDENT");
+
   return prisma.documentRequest.findMany({
-    where: { studentId },
+    where: { studentId: session.userId },
     include: {
       student: { select: studentSelect },
       requestItems: true,
@@ -115,20 +125,13 @@ export async function getRequestHistoryForStudent(studentId: string) {
 }
 
 export async function getAuthenticatedDocumentRequestByRequestNumber(requestNumber: string) {
-  const session = await getCurrentSession();
-  if (!session || session.role !== "STUDENT") {
-    redirect("/login");
-  }
+  const session = await requirePortalRole("STUDENT");
 
-  const request = await getDocumentRequestByRequestNumber(requestNumber);
-  return request?.studentId === session.userId ? request : null;
+  return findDocumentRequestByRequestNumber(requestNumber, session.userId);
 }
 
-export async function confirmMockPayment(requestNumber: string, selectedMethod: unknown) {
-  const session = await getCurrentSession();
-  if (!session || session.role !== "STUDENT") {
-    redirect("/login");
-  }
+export async function submitMockPayment(requestNumber: string, selectedMethod: unknown) {
+  const session = await requirePortalRole("STUDENT");
 
   if (typeof requestNumber !== "string" || !requestNumber.trim()) {
     return { success: false as const, error: "Request not found." };
@@ -166,20 +169,8 @@ export async function confirmMockPayment(requestNumber: string, selectedMethod: 
         where: { requestId: request.id },
       });
 
-      if (existingPayment?.status === PaymentStatus.PAID) {
-        return {
-          success: true as const,
-          payment: {
-            id: existingPayment.id,
-            status: existingPayment.status,
-            method: existingPayment.method,
-            amount: existingPayment.amount?.toString() ?? null,
-            transactionReference: existingPayment.transactionReference,
-            paidAt: existingPayment.paidAt?.toISOString() ?? null,
-            createdAt: existingPayment.createdAt.toISOString(),
-            updatedAt: existingPayment.updatedAt.toISOString(),
-          },
-        };
+      if (existingPayment) {
+        return { success: false as const, error: "A payment has already been submitted for Treasury review." };
       }
 
       const requestTotal = await transaction.requestItem.aggregate({
@@ -192,42 +183,14 @@ export async function confirmMockPayment(requestNumber: string, selectedMethod: 
         return { success: false as const, error: "This request has no payable document total." };
       }
 
-      const paidAt = new Date();
-      const transactionReference = `NUDOC-PAY-${randomBytes(4).toString("hex").toUpperCase()}`;
-      const payment = existingPayment
-        ? await transaction.payment.update({
-            where: { id: existingPayment.id },
-            data: {
-              status: PaymentStatus.PAID,
-              method: selectedMethod,
-              amount,
-              paidAt,
-              transactionReference,
-            },
-          })
-        : await transaction.payment.create({
-            data: {
-              requestId: request.id,
-              status: PaymentStatus.PAID,
-              method: selectedMethod,
-              amount,
-              paidAt,
-              transactionReference,
-            },
-          });
-
-      const requestDetails = await transaction.documentRequest.findUniqueOrThrow({
-        where: { id: request.id },
-        select: { requestNumber: true },
-      });
-
-      await transaction.notification.create({
+      const transactionReference = `NUDOC-MOCK-PAY-${randomBytes(4).toString("hex").toUpperCase()}`;
+      const payment = await transaction.payment.create({
         data: {
-          type: NotificationType.PAYMENT_CONFIRMED,
-          title: "Payment confirmed",
-          message: `Payment confirmed for request ${requestDetails.requestNumber}. Amount: ₱${amount.toFixed(2)}. Reference: ${transactionReference}`,
-          requestNumber: requestDetails.requestNumber,
-          userId: session.userId,
+          requestId: request.id,
+          status: PaymentStatus.PENDING,
+          method: selectedMethod,
+          amount,
+          transactionReference,
         },
       });
 
@@ -239,15 +202,17 @@ export async function confirmMockPayment(requestNumber: string, selectedMethod: 
           method: payment.method,
           amount: payment.amount?.toString() ?? null,
           transactionReference: payment.transactionReference,
-          paidAt: payment.paidAt?.toISOString() ?? null,
+          paidAt: null,
+          rejectionReason: null,
+          reviewedAt: null,
           createdAt: payment.createdAt.toISOString(),
           updatedAt: payment.updatedAt.toISOString(),
         },
       };
     });
   } catch {
-    console.error("[NU-Docs] Mock payment confirmation failed.");
-    return { success: false as const, error: "We could not confirm this simulated payment. Please try again." };
+    console.error("[NU-Docs] Mock payment submission failed.");
+    return { success: false as const, error: "We could not submit this simulated payment. Please try again." };
   }
 }
 
@@ -258,10 +223,7 @@ export async function createDocumentRequest({
   items: Array<{ documentType: DocumentType; quantity: number }>;
   purpose: string;
 }) {
-  const session = await getCurrentSession();
-  if (!session || session.role !== "STUDENT") {
-    redirect("/login");
-  }
+  const session = await requirePortalRole("STUDENT");
 
   if (!items.length || items.some((item) => !Number.isInteger(item.quantity) || item.quantity <= 0 || !(item.documentType in documentPricing))) {
     throw new Error("At least one valid document item is required.");
@@ -315,10 +277,7 @@ export async function createDocumentRequest({
 }
 
 export async function saveDocumentRequestInternalNotes(requestNumber: string, notes: string) {
-  const session = await getCurrentSession();
-  if (!session || session.role !== "ADMIN") {
-    throw new Error("Administrator access required.");
-  }
+  await requirePortalRole("REGISTRAR");
 
   if (!requestNumber.trim() || typeof notes !== "string") {
     throw new Error("Invalid internal note request.");
@@ -346,6 +305,8 @@ export async function updateDocumentRequestStatus({
   status: RequestStatus;
   remarks?: string;
 }) {
+  await requirePortalRole("REGISTRAR");
+
   return prisma.$transaction(async (transaction) => {
     const existingRequest = await transaction.documentRequest.findUnique({
       where: { requestNumber },

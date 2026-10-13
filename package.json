@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "node --test tests/treasury-utils.test.mjs",
     "lint": "eslint",
+    "provision:demo-treasury": "node scripts/create-demo-treasury.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
-import type { UserRole } from "@prisma/client";
+import type { PortalRole } from "@/lib/roles";
 
 const AUTH_COOKIE_NAME = "nu-docs-session";
 const SESSION_DURATION_SECONDS = 60 * 60 * 24 * 7;
@@ -9,7 +9,7 @@ const BCRYPT_ROUNDS = 12;
 
 export type SessionPayload = {
   userId: string;
-  role: UserRole;
+  role: PortalRole;
 };
 
 function getAuthSecret() {
@@ -40,9 +40,10 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
   try {
     const { payload } = await jwtVerify(token, getAuthSecret());
     const userId = payload.userId;
-    const role = payload.role;
+    const tokenRole = payload.role;
+    const role = tokenRole === "ADMIN" ? "REGISTRAR" : tokenRole;
 
-    if (typeof userId !== "string" || (role !== "STUDENT" && role !== "ADMIN")) {
+    if (typeof userId !== "string" || (role !== "STUDENT" && role !== "REGISTRAR" && role !== "TREASURY")) {
       return null;
     }
 

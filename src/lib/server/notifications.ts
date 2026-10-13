@@ -1,12 +1,11 @@
 "use server";
 
-import { redirect } from "next/navigation";
-import { getCurrentSession } from "@/lib/auth";
+import { requirePortalRole } from "@/lib/server/authorization";
 import { prisma } from "@/lib/prisma";
 
 export type NotificationListItem = {
   id: string;
-  type: "REQUEST_SUBMITTED" | "STATUS_UPDATED" | "PAYMENT_CONFIRMED";
+  type: "REQUEST_SUBMITTED" | "STATUS_UPDATED" | "PAYMENT_SUBMITTED" | "PAYMENT_CONFIRMED" | "PAYMENT_REJECTED";
   title: string;
   message: string;
   isRead: boolean;
@@ -15,9 +14,10 @@ export type NotificationListItem = {
   userId: string;
 };
 
-export async function getNotificationsForUser(userId: string) {
+export async function getNotificationsForUser() {
+  const session = await requirePortalRole("STUDENT");
   const notifications = await prisma.notification.findMany({
-    where: { userId },
+    where: { userId: session.userId },
     orderBy: { createdAt: "desc" },
   });
 
@@ -34,10 +34,7 @@ export async function getNotificationsForUser(userId: string) {
 }
 
 export async function markNotificationAsRead(notificationId: string) {
-  const session = await getCurrentSession();
-  if (!session || session.role !== "STUDENT") {
-    redirect("/login");
-  }
+  const session = await requirePortalRole("STUDENT");
 
   const notification = await prisma.notification.findUnique({
     where: { id: notificationId },

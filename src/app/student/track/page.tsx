@@ -20,7 +20,7 @@ export default async function TrackPage({ searchParams }: { searchParams: Promis
     redirect("/login");
   }
 
-  const history = reference.trim() ? [] : await getRequestHistoryForStudent(session.userId);
+  const history = reference.trim() ? [] : await getRequestHistoryForStudent();
   const recentRequests: RecentRequestSummary[] = history.slice(0, 5).map((request) => {
     const documents = request.requestItems.length
       ? request.requestItems.map((item) => ({

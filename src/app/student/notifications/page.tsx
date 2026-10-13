@@ -11,7 +11,7 @@ export default async function NotificationsPage() {
     redirect("/login");
   }
 
-  const notifications = await getNotificationsForUser(session.userId);
+  const notifications = await getNotificationsForUser();
 
   return <StudentPortalShell><StudentBreadcrumb currentPage="Notifications" /><PageHeader eyebrow="NU-Docs / Student services" title="Notifications" description="Updates about your requests and document releases." /><NotificationsList notifications={notifications} markNotificationAsRead={markNotificationAsRead} /></StudentPortalShell>;
 }

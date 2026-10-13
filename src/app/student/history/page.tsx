@@ -36,7 +36,7 @@ export default async function HistoryPage({ searchParams }: { searchParams: Prom
   if (!session || session.role !== "STUDENT") {
     redirect("/login");
   }
-  const requests = await getRequestHistoryForStudent(session.userId);
+  const requests = await getRequestHistoryForStudent();
   const selectedStatus = statusOptions.find((option) => option.value === status)?.value ?? "";
   const history = requests.map((request) => ({
     id: request.requestNumber,
