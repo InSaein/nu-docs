@@ -22,7 +22,7 @@ This project uses [`next/font`](https://nextjs.org/docs/app/building-your-applic
 
 ## Treasury demo login
 
-The Treasury demo account is created only by an explicit command; application startup and production builds do not provision it. Configure `DEMO_TREASURY_STUDENT_NUMBER`, `DEMO_TREASURY_NAME`, `DEMO_TREASURY_EMAIL`, and `DEMO_TREASURY_PASSWORD` in the project `.env`, following the `DEMO_STUDENT_*` and `DEMO_ADMIN_*` conventions. Use development-only details and a unique password. The password is not included in client code or printed by the provisioning script.
+The Treasury demo account is created only by an explicit command; application startup and production builds do not provision it. Configure `DEMO_TREASURY_STUDENT_NUMBER`, `DEMO_TREASURY_NAME`, `DEMO_TREASURY_EMAIL`, and `DEMO_TREASURY_PASSWORD` in the project `.env`, following the `DEMO_STUDENT_*` and `DEMO_ADMIN_*` conventions. The demo login uses the fixed development account `TREASURY-DEMO-00001` with password `password`, matching the credentials used when its database password hash was provisioned.
 
 In PowerShell, enable the existing demo login flag and run the explicit provision command against your development or disposable database:
 
@@ -33,7 +33,7 @@ npm run provision:demo-treasury
 
 The provisioning command loads `.env` using the same dotenv convention as the Student and Admin scripts. It refuses identifier or email conflicts without changing the conflicting account; re-running with an existing Treasury account updates its profile and password without changing its role.
 
-The Treasury Demo Login button is controlled by `ENABLE_DEMO_LOGIN`, like the other demo buttons. It reads the configured identifier and password on the server, verifies the password against the provisioned Treasury account, creates the normal signed session, and redirects to the Treasury dashboard. Provisioning remains explicit and must not be pointed at production.
+The Treasury Demo Login button is controlled by `ENABLE_DEMO_LOGIN`, like the other demo buttons. It looks up the fixed demo identifier on the server, verifies the demo password against the provisioned database hash, creates the normal signed session, and redirects to the Treasury dashboard. Runtime login does not require the Treasury provisioning variables; those remain necessary only when explicitly provisioning or updating the account. Provisioning remains explicit and must not be pointed at production.
 
 ## Learn More
 

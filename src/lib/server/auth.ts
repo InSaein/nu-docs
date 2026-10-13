@@ -10,6 +10,8 @@ export type LoginState = {
 };
 
 const invalidCredentialsMessage = "Invalid student number or password.";
+const treasuryDemoStudentNumber = "TREASURY-DEMO-00001";
+const treasuryDemoPassword = "admin";
 export async function logout() {
   await clearAuthSession();
   redirect("/login");
@@ -91,13 +93,7 @@ export async function treasuryDemoLogin(previousState: LoginState, formData: For
     return { error: "Treasury demo login is not available." };
   }
 
-  const studentNumber = process.env.DEMO_TREASURY_STUDENT_NUMBER;
-  const password = process.env.DEMO_TREASURY_PASSWORD;
-  if (!studentNumber || !password) {
-    return { error: "Treasury demo login is not configured." };
-  }
-
-  return authenticateTreasury(studentNumber, password);
+  return authenticateTreasury(treasuryDemoStudentNumber, treasuryDemoPassword);
 }
 
 async function authenticateTreasury(studentNumber: string, password: string): Promise<LoginState> {
