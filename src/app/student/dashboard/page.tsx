@@ -53,35 +53,17 @@ export default async function StudentDashboard() {
   return (
     <StudentPortalShell>
       <StudentBreadcrumb currentPage="Dashboard" />
-      <PageHeader
-        eyebrow="NU-Docs / Student services"
-        title={`Welcome back, ${user.name}`}
-        description="Keep track of your document requests and student service updates."
-      />
-      <section className="student-profile-panel surface">
-        <div>
-          <span className="eyebrow">Student profile</span>
-          <h2>{user.name}</h2>
-        </div>
-        <dl>
-          <div>
-            <dt>Student number</dt>
-            <dd>{user.studentNumber ?? "Not available"}</dd>
-          </div>
-          <div>
-            <dt>Email</dt>
-            <dd>{user.email}</dd>
-          </div>
-        </dl>
-      </section>
-      <section className="student-quick-action surface">
-        <div>
-          <span className="eyebrow">Need another document?</span>
-          <h2>Request a Document</h2>
-          <p className="muted">Start a new request and submit your purpose online.</p>
-        </div>
-        <Link className="btn btn-primary" href="/student/request">Request a Document</Link>
-      </section>
+      <div className="student-dashboard-header">
+        <PageHeader
+          eyebrow="NU-Docs / Student services"
+          title={`Welcome back, ${user.name}`}
+          description="Keep track of your document requests and student service updates."
+        >
+          <Link className="btn btn-primary student-dashboard-request-button" href="/student/request">
+            Request a Document
+          </Link>
+        </PageHeader>
+      </div>
       <section className="student-dashboard-section">
         <div className="student-section-heading">
           <h2>Request Status</h2>

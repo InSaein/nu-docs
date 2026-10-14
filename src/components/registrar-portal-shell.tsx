@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { PortalFooter } from "@/components/app-shell";
 import { RegistrarLogoutForm } from "@/components/registrar-logout-form";
 import { PortalMenuButton, usePortalDrawer } from "@/components/portal-drawer";
@@ -9,10 +10,13 @@ import { PortalSettingsLink } from "@/components/portal-settings-link";
 const registrarLinks = [
   { icon: "⌂", label: "Dashboard", href: "/registrar/dashboard" },
   { icon: "▣", label: "Request review", href: "/registrar/requests" },
+  { icon: "◷", label: "Pickup schedule", href: "/registrar/pickup-schedule" },
+  { icon: "▤", label: "Upcoming Pickups", href: "/registrar/upcoming-pickups" },
 ];
 
 export function RegistrarPortalShell({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
+  const pathname = usePathname();
 
   return (
     <div className="portal-home registrar-portal">
@@ -49,7 +53,13 @@ export function RegistrarPortalShell({ children }: { children: React.ReactNode }
         >
           <nav aria-label="Registrar navigation">
             {registrarLinks.map((item) => (
-              <Link className="registrar-nav-link" href={item.href} key={item.href} onClick={() => setIsOpen(false)}>
+              <Link
+                className="registrar-nav-link"
+                href={item.href}
+                key={item.href}
+                aria-current={pathname === item.href || pathname.startsWith(`${item.href}/`) ? "page" : undefined}
+                onClick={() => setIsOpen(false)}
+              >
                 <span aria-hidden="true">{item.icon}</span>{item.label}
               </Link>
             ))}

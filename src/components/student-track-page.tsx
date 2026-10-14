@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { DocumentPreviewModal } from "@/components/document-preview-modal";
 import { LoadingSpinner } from "@/components/loading-spinner";
+import { StudentPickupSection } from "@/components/student-pickup-section";
 import { useStudentIdentity } from "@/components/student-portal-header";
 import { documentLabels } from "@/lib/document-pricing";
 import { getPaymentMethodLabel, paymentOptions } from "@/lib/payment-options";
@@ -429,6 +430,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
               <h2>Request timeline</h2>
               {stages.map((stage, index) => <div className={`timeline-item ${index <= currentStage ? "complete" : ""} ${index === currentStage ? "current" : ""}`} key={stage}><span className="timeline-dot">{index < currentStage ? "✓" : index + 1}</span><div><strong>{stage}</strong><p>{index === currentStage ? "This is the current stage of your request." : index < currentStage ? "Completed" : "Waiting to begin"}</p></div></div>)}
             </div>
+            {request.status === "READY_FOR_RELEASE" && <StudentPickupSection requestNumber={request.requestNumber} />}
           </section>
           <aside className="surface pad">
             <span className="eyebrow">Request details</span>
@@ -438,7 +440,7 @@ export function StudentTrackPage({ initialReference, recentRequests, hasMoreRequ
               <section className="track-section payment-section" aria-labelledby="payment-heading">
                 <h2 id="payment-heading">Payment</h2>
                 <dl className="payment-details">
-                  <div><dt>Payment status</dt><dd><strong>{paymentIsPaid ? "Confirmed by Treasury" : paymentIsRejected ? "Rejected by Treasury" : request.payment ? "Pending Treasury verification" : "Not submitted"}</strong></dd></div>
+                  <div><dt>Payment status</dt><dd><strong className={paymentIsPaid ? "payment-status-paid" : paymentIsRejected ? "payment-status-rejected" : request.payment ? "payment-status-pending" : "payment-status-not-submitted"}>{paymentIsPaid ? "Confirmed by Treasury" : paymentIsRejected ? "Rejected by Treasury" : request.payment ? "Pending Treasury verification" : "Not submitted"}</strong></dd></div>
                   <div><dt>{paymentIsPaid ? "Amount" : "Amount due"}</dt><dd>{paymentDisplayAmount === null ? "Not available" : `₱${paymentDisplayAmount.toFixed(2)}`}</dd></div>
                 </dl>
                 {request.payment && <PaymentConfirmationCard requestNumber={request.requestNumber} payment={request.payment} />}

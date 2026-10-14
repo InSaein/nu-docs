@@ -7,54 +7,56 @@ datasource db {
 }
 
 model User {
-  id            String            @id @default(cuid())
-  studentNumber String?           @unique
-  name          String
-  firstName     String?
-  middleName    String?
-  lastName      String?
-  nameExtension String?
-  course        String?
-  email         String            @unique
-  password      String
-  role          UserRole          @default(STUDENT)
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  requests      DocumentRequest[]
-  notifications Notification[]
-  reviewedPayments Payment[]      @relation("PaymentReviewer")
-  paymentAuditEntries PaymentAudit[] @relation("PaymentAuditActor")
-  preferences   UserPreferences?
+  id                       String                     @id @default(cuid())
+  studentNumber            String?                    @unique
+  name                     String
+  firstName                String?
+  middleName               String?
+  lastName                 String?
+  nameExtension            String?
+  course                   String?
+  email                    String                     @unique
+  password                 String
+  role                     UserRole                   @default(STUDENT)
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  requests                 DocumentRequest[]
+  notifications            Notification[]
+  reviewedPayments         Payment[]                  @relation("PaymentReviewer")
+  paymentAuditEntries      PaymentAudit[]             @relation("PaymentAuditActor")
+  pickupAppointmentChanges PickupAppointmentHistory[] @relation("PickupAppointmentActor")
+  preferences              UserPreferences?
 }
 
 model UserPreferences {
-  userId       String           @id
-  palette      PreferencePalette @default(NU_BLUE)
-  themeMode    ThemeMode         @default(SYSTEM)
-  largeText    Boolean           @default(false)
-  reducedMotion Boolean          @default(false)
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  user         User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String            @id
+  palette       PreferencePalette @default(NU_BLUE)
+  themeMode     ThemeMode         @default(SYSTEM)
+  largeText     Boolean           @default(false)
+  reducedMotion Boolean           @default(false)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model DocumentRequest {
-  id                String                 @id @default(cuid())
-  requestNumber     String                 @unique
-  documentType      DocumentType
-  purpose           String
-  status            RequestStatus          @default(SUBMITTED)
-  remarks           String?
-  createdAt         DateTime               @default(now())
-  updatedAt         DateTime               @updatedAt
-  completedAt       DateTime?
-  studentId         String
-  student           User                   @relation(fields: [studentId], references: [id])
-  payment           Payment?
-  requestItems      RequestItem[]
-  paymentAudits     PaymentAudit[]
-  statusHistory     RequestStatusHistory[]
-  uploadedDocuments UploadedDocument[]
+  id                 String                 @id @default(cuid())
+  requestNumber      String                 @unique
+  documentType       DocumentType
+  purpose            String
+  status             RequestStatus          @default(SUBMITTED)
+  remarks            String?
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  completedAt        DateTime?
+  studentId          String
+  student            User                   @relation(fields: [studentId], references: [id])
+  payment            Payment?
+  requestItems       RequestItem[]
+  paymentAudits      PaymentAudit[]
+  statusHistory      RequestStatusHistory[]
+  uploadedDocuments  UploadedDocument[]
+  pickupAppointments PickupAppointment[]
 }
 
 model RequestItem {
@@ -102,7 +104,7 @@ model Payment {
 }
 
 model PaymentAudit {
-  id              String              @id @default(cuid())
+  id              String             @id @default(cuid())
   paymentId       String
   requestId       String
   previousStatus  PaymentStatus
@@ -110,11 +112,11 @@ model PaymentAudit {
   action          PaymentAuditAction
   actorId         String
   rejectionReason String?
-  isBackfilled    Boolean             @default(false)
-  createdAt       DateTime            @default(now())
-  payment         Payment             @relation(fields: [paymentId], references: [id], onDelete: Restrict)
-  request         DocumentRequest     @relation(fields: [requestId], references: [id], onDelete: Restrict)
-  actor           User                @relation("PaymentAuditActor", fields: [actorId], references: [id], onDelete: Restrict)
+  isBackfilled    Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  payment         Payment            @relation(fields: [paymentId], references: [id], onDelete: Restrict)
+  request         DocumentRequest    @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  actor           User               @relation("PaymentAuditActor", fields: [actorId], references: [id], onDelete: Restrict)
 
   @@index([paymentId, createdAt])
   @@index([requestId, createdAt])
@@ -142,6 +144,90 @@ model Notification {
   userId        String
   requestNumber String?
   user          User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PickupSchedule {
+  id             String               @id @default("default")
+  effectiveFrom  DateTime             @db.Date
+  effectiveUntil DateTime?            @db.Date
+  enabled        Boolean              @default(true)
+  timeZone       String               @default("Asia/Manila")
+  weeklyRules    PickupWeeklyRule[]
+  dateOverrides  PickupDateOverride[]
+  blockedSlots   PickupBlockedSlot[]
+  updatedAt      DateTime             @updatedAt
+}
+
+model PickupWeeklyRule {
+  id                  String         @id @default(cuid())
+  scheduleId          String
+  weekday             Int
+  opensAt             String
+  closesAt            String
+  slotDurationMinutes Int
+  capacity            Int
+  schedule            PickupSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleId, weekday])
+}
+
+model PickupDateOverride {
+  id                  String         @id @default(cuid())
+  scheduleId          String
+  date                DateTime       @db.Date
+  isClosed            Boolean        @default(false)
+  opensAt             String?
+  closesAt            String?
+  slotDurationMinutes Int?
+  capacity            Int?
+  reason              String?
+  schedule            PickupSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@unique([scheduleId, date])
+  @@index([date])
+}
+
+model PickupBlockedSlot {
+  id         String         @id @default(cuid())
+  scheduleId String
+  startsAt   DateTime       @db.Timestamptz(3)
+  endsAt     DateTime       @db.Timestamptz(3)
+  reason     String?
+  schedule   PickupSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@index([startsAt, endsAt])
+}
+
+model PickupAppointment {
+  id          String                     @id @default(cuid())
+  requestId   String
+  startsAt    DateTime                   @db.Timestamptz(3)
+  endsAt      DateTime                   @db.Timestamptz(3)
+  status      PickupAppointmentStatus    @default(SCHEDULED)
+  createdAt   DateTime                   @default(now())
+  updatedAt   DateTime                   @updatedAt
+  cancelledAt DateTime?
+  request     DocumentRequest            @relation(fields: [requestId], references: [id], onDelete: Restrict)
+  history     PickupAppointmentHistory[]
+
+  @@index([startsAt, status])
+  @@index([requestId, createdAt])
+}
+
+model PickupAppointmentHistory {
+  id               String                  @id @default(cuid())
+  appointmentId    String
+  actorId          String
+  action           PickupAppointmentAction
+  previousStartsAt DateTime?               @db.Timestamptz(3)
+  newStartsAt      DateTime?               @db.Timestamptz(3)
+  reason           String?
+  createdAt        DateTime                @default(now())
+  appointment      PickupAppointment       @relation(fields: [appointmentId], references: [id], onDelete: Restrict)
+  actor            User                    @relation("PickupAppointmentActor", fields: [actorId], references: [id], onDelete: Restrict)
+
+  @@index([appointmentId, createdAt])
+  @@index([actorId, createdAt])
 }
 
 model playing_with_neon {
@@ -178,6 +264,9 @@ enum NotificationType {
   PAYMENT_SUBMITTED
   PAYMENT_CONFIRMED
   PAYMENT_REJECTED
+  PICKUP_SCHEDULED
+  PICKUP_CHANGED
+  PICKUP_CANCELLED
 }
 
 enum PaymentStatus {
@@ -189,6 +278,20 @@ enum PaymentStatus {
 enum PaymentAuditAction {
   CONFIRMED
   REJECTED
+}
+
+enum PickupAppointmentStatus {
+  SCHEDULED
+  CANCELLED
+  COMPLETED
+}
+
+enum PickupAppointmentAction {
+  SCHEDULED
+  RESCHEDULED
+  CANCELLED
+  COMPLETED
+  AUTO_CANCELLED
 }
 
 enum PaymentMethod {

@@ -1,7 +1,7 @@
 "use server";
 
 import { randomBytes, randomUUID } from "node:crypto";
-import { DocumentType, NotificationType, PaymentStatus, Prisma, RequestStatus } from "@prisma/client";
+import { DocumentType, NotificationType, PaymentStatus, PickupAppointmentAction, PickupAppointmentStatus, Prisma, RequestStatus } from "@prisma/client";
 import { documentPricing } from "@/lib/document-pricing";
 import { requirePortalRole } from "@/lib/server/authorization";
 import { isPaymentMethod } from "@/lib/payment-options";
@@ -305,16 +305,54 @@ export async function updateDocumentRequestStatus({
   status: RequestStatus;
   remarks?: string;
 }) {
-  await requirePortalRole("REGISTRAR");
+  const session = await requirePortalRole("REGISTRAR");
+  if (!Object.values(RequestStatus).includes(status)) {
+    throw new Error("Invalid request status.");
+  }
 
   return prisma.$transaction(async (transaction) => {
+    await transaction.$queryRaw`SELECT pg_advisory_xact_lock(741023) IS NULL AS "locked"`;
+    await transaction.$queryRaw`SELECT "id" FROM "PickupSchedule" WHERE "id" = 'default' FOR UPDATE`;
+    await transaction.$queryRaw`SELECT "id" FROM "DocumentRequest" WHERE "requestNumber" = ${requestNumber} FOR UPDATE`;
     const existingRequest = await transaction.documentRequest.findUnique({
       where: { requestNumber },
-      select: { status: true, remarks: true, studentId: true },
+      select: { id: true, status: true, remarks: true, studentId: true },
     });
 
     if (!existingRequest) {
       throw new Error("Request not found");
+    }
+
+    const activeAppointment = await transaction.pickupAppointment.findFirst({
+      where: { requestId: existingRequest.id, status: PickupAppointmentStatus.SCHEDULED },
+    });
+    if (activeAppointment && status === RequestStatus.COMPLETED) {
+      throw new Error("Confirm pickup handover from the appointment before completing this request.");
+    }
+    if (activeAppointment && status !== RequestStatus.READY_FOR_RELEASE) {
+      const cancelledAt = new Date();
+      await transaction.pickupAppointment.update({
+        where: { id: activeAppointment.id },
+        data: { status: PickupAppointmentStatus.CANCELLED, cancelledAt },
+      });
+      await transaction.pickupAppointmentHistory.create({
+        data: {
+          appointmentId: activeAppointment.id,
+          actorId: session.userId,
+          action: PickupAppointmentAction.AUTO_CANCELLED,
+          previousStartsAt: activeAppointment.startsAt,
+          reason: "The document request is no longer ready for pickup.",
+        },
+      });
+      await transaction.notification.create({
+        data: {
+          type: NotificationType.PICKUP_CANCELLED,
+          title: "Pickup cancelled",
+          message: `Your pickup for request ${requestNumber} was cancelled because the request is no longer ready for release.`,
+          requestNumber,
+          userId: existingRequest.studentId,
+        },
+      });
     }
 
     if (existingRequest.status === status) {

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { StudentPortalHeader } from "@/components/student-portal-header";
 import { StudentLogoutForm } from "@/components/student-logout-form";
 import { PortalFooter } from "@/components/app-shell";
@@ -21,6 +22,7 @@ export function StudentBreadcrumb({ currentPage }: { currentPage: string }) {
 
 export function StudentPortalShell({ children }: { children: React.ReactNode }) {
   const { isOpen, isDesktop, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
+  const pathname = usePathname();
 
   return (
     <div className="portal-home student-admin-portal">
@@ -47,7 +49,13 @@ export function StudentPortalShell({ children }: { children: React.ReactNode }) 
         >
           <nav aria-label="Student navigation">
             {studentLinks.map((item) => (
-              <Link className="student-nav-link" href={item.href} key={item.href} onClick={() => setIsOpen(false)}>
+              <Link
+                className="student-nav-link"
+                href={item.href}
+                key={item.href}
+                aria-current={pathname === item.href || pathname.startsWith(`${item.href}/`) ? "page" : undefined}
+                onClick={() => setIsOpen(false)}
+              >
                 <span aria-hidden="true">{item.icon}</span>{item.label}
               </Link>
             ))}

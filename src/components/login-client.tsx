@@ -116,7 +116,7 @@ function LoginForm({
           name="studentNumber"
           autoComplete="username"
           required
-          placeholder={isTreasury ? "Treasury ID" : isAdmin ? "Registrar ID" : "2026-00001"}
+          placeholder={isTreasury ? "Treasury ID" : isAdmin ? "Registrar ID" : "Student Number"}
         />
       </div>
       <div className="field">
@@ -128,7 +128,7 @@ function LoginForm({
           type="password"
           autoComplete="current-password"
           required
-          placeholder={isAdmin ? "admin" : "password"}
+          placeholder={isAdmin ? "Password" : "Password"}
         />
       </div>
       {(isTreasury ? state.error ?? treasuryDemoState.error : state.error) && (
@@ -201,10 +201,10 @@ function LoginContent({ showDemoLogin }: { showDemoLogin: boolean }) {
         </span>
         <h1 className="display-font hero-title">
           {mode === "treasury"
-            ? <>Treasury<br />portal.</>
+            ? <>Every second<br />counts.</>
             : mode === "admin"
-              ? <>Registrar<br />portal.</>
-              : <>Your campus<br />is moving.</>}
+              ? <>Every second<br />counts.</>
+              : <>Every second<br />counts.</>}
         </h1>
         <p>
           {mode === "treasury"

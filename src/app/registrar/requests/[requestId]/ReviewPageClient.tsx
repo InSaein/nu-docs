@@ -5,9 +5,12 @@ import { PaymentStatus } from "@prisma/client";
 import { useEffect, useRef, useState } from "react";
 import { PageHeader, StatusPill } from "@/components/app-shell";
 import { RegistrarBreadcrumb, RegistrarPortalShell } from "@/components/registrar-portal-shell";
+import { PickupActionDialog } from "@/components/pickup-action-dialog";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { getPaymentMethodLabel } from "@/lib/payment-options";
 import { getDocumentRequestByRequestNumber, saveDocumentRequestInternalNotes, updateDocumentRequestStatus } from "@/lib/server/requests";
+import { cancelPickupAppointmentAsRegistrar, confirmPickupHandover, getRegistrarPickupAppointmentsForRequest } from "@/lib/server/pickup-scheduling";
+import { formatManilaDateTime } from "@/lib/pickup-scheduling";
 
 const statusValues = {
   Submitted: "SUBMITTED",
@@ -38,8 +41,15 @@ type ReviewPageClientProps = {
   requestId: string;
 };
 
+type PickupAppointments = Awaited<ReturnType<typeof getRegistrarPickupAppointmentsForRequest>>;
+
 export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
   const [request, setRequest] = useState<Awaited<ReturnType<typeof getDocumentRequestByRequestNumber>>>(null);
+  const [pickupAppointments, setPickupAppointments] = useState<PickupAppointments>([]);
+  const [pickupMessage, setPickupMessage] = useState("");
+  const [pickupError, setPickupError] = useState("");
+  const [updatingPickup, setUpdatingPickup] = useState(false);
+  const [pendingPickupAction, setPendingPickupAction] = useState<{ appointmentId: string; action: "complete" | "cancel" } | null>(null);
   const [requestLoadError, setRequestLoadError] = useState("");
   const [loadingRequest, setLoadingRequest] = useState(true);
   const [status, setStatus] = useState<keyof typeof statusValues>("Submitted");
@@ -77,6 +87,18 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
     };
   }, [requestId]);
 
+  useEffect(() => {
+    let active = true;
+    getRegistrarPickupAppointmentsForRequest(requestId)
+      .then((appointments) => {
+        if (active) setPickupAppointments(appointments);
+      })
+      .catch(() => {
+        if (active) setPickupError("Unable to load pickup appointments.");
+      });
+    return () => { active = false; };
+  }, [requestId]);
+
   const updateStatus = async (nextStatus: keyof typeof statusValues) => {
     if (!request || statusUpdateInProgress.current) return;
     statusUpdateInProgress.current = true;
@@ -90,6 +112,7 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
         remarks: notes,
       });
       setStatus(nextStatus);
+      setPickupAppointments(await getRegistrarPickupAppointmentsForRequest(request.requestNumber));
       setStatusError("");
       setStatusSuccess("Request status updated successfully.");
     } catch {
@@ -97,6 +120,39 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
     } finally {
       statusUpdateInProgress.current = false;
       setUpdatingStatus(false);
+    }
+  };
+
+  const updatePickup = async (appointmentId: string, action: "complete" | "cancel") => {
+    if (updatingPickup) return;
+    setUpdatingPickup(true);
+    setPickupError("");
+    setPickupMessage("");
+    try {
+      const result = action === "complete"
+        ? await confirmPickupHandover(appointmentId)
+        : await cancelPickupAppointmentAsRegistrar(appointmentId);
+      if (!result.success) {
+        setPickupError(result.error ?? "Unable to update pickup.");
+        return;
+      }
+      setPendingPickupAction(null);
+      setPickupMessage(action === "complete" ? "Pickup confirmed as completed." : "Pickup appointment cancelled.");
+      try {
+        const [updatedRequest, appointments] = await Promise.all([
+          getDocumentRequestByRequestNumber(requestId),
+          getRegistrarPickupAppointmentsForRequest(requestId),
+        ]);
+        setRequest(updatedRequest);
+        setPickupAppointments(appointments);
+        if (updatedRequest) setStatus(statusLabels[updatedRequest.status]);
+      } catch {
+        setPickupError("The pickup action succeeded, but the request details could not refresh. Reload the page to see the latest status.");
+      }
+    } catch {
+      setPickupError("Unable to update pickup. Please try again.");
+    } finally {
+      setUpdatingPickup(false);
     }
   };
 
@@ -178,6 +234,35 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
               {paid && payment.paidAt && <div><dt>Paid</dt><dd>{new Date(payment.paidAt).toLocaleString("en-US", { month: "long", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit" })}</dd></div>}
             </dl>
           </div>
+          {pickupAppointments.length > 0 && (
+            <section className="surface pad review-card pickup-review-card" aria-labelledby="request-pickup-heading">
+              <div className="section-label" id="request-pickup-heading">Pickup appointments</div>
+              {pickupAppointments.map((appointment) => (
+                <div className="pickup-review-item" key={appointment.id}>
+                  <strong>{formatManilaDateTime(new Date(appointment.startsAt))}</strong>
+                  <span className={`status ${appointment.status === "COMPLETED" ? "status-ready-for-release" : appointment.status === "CANCELLED" ? "status-cancelled" : "status-pending"}`}>
+                    {appointment.status === "SCHEDULED" ? "Scheduled" : appointment.status === "CANCELLED" ? "Cancelled" : "Completed"}
+                  </span>
+                  {appointment.status === "SCHEDULED" && (
+                    <div className="pickup-actions">
+                      <button className="btn btn-primary" type="button" disabled={updatingPickup} onClick={() => {
+                        setPickupError("");
+                        setPickupMessage("");
+                        setPendingPickupAction({ appointmentId: appointment.id, action: "complete" });
+                      }}>Confirm handover</button>
+                      <button className="btn btn-secondary" type="button" disabled={updatingPickup} onClick={() => {
+                        setPickupError("");
+                        setPickupMessage("");
+                        setPendingPickupAction({ appointmentId: appointment.id, action: "cancel" });
+                      }}>Cancel pickup</button>
+                    </div>
+                  )}
+                </div>
+              ))}
+              {pickupMessage && <p className="inline-success" role="status">{pickupMessage}</p>}
+              {pickupError && <p className="notice notice-blue" role="alert">{pickupError}</p>}
+            </section>
+          )}
         </section>
         <aside>
           <div className="surface pad">
@@ -189,7 +274,7 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
                 <option>Under Review</option>
                 <option>Processing</option>
                 <option>Ready for Release</option>
-                <option>Completed</option>
+                <option disabled={pickupAppointments.some((appointment) => appointment.status === "SCHEDULED")}>Completed</option>
                 <option>Rejected</option>
               </select>
               {updatingStatus && <p className="registrar-action-pending" role="status" aria-live="polite" aria-busy="true"><LoadingSpinner inline label="Updating status" />Updating...</p>}
@@ -212,6 +297,21 @@ export default function ReviewPageClient({ requestId }: ReviewPageClientProps) {
           <Link className="back-link" href="/registrar/dashboard">← Back to request queue</Link>
         </aside>
       </div>
+      <PickupActionDialog
+        open={pendingPickupAction !== null}
+        title={pendingPickupAction?.action === "complete" ? "Confirm document handover?" : "Cancel pickup appointment?"}
+        description={pendingPickupAction?.action === "complete"
+          ? `Confirm that the document for request ${request.requestNumber} has been handed to the student. This will complete the request.`
+          : `Cancel the scheduled pickup for request ${request.requestNumber}? The student will be notified.`}
+        confirmLabel={pendingPickupAction?.action === "complete" ? "Confirm handover" : "Cancel pickup"}
+        cancelLabel={pendingPickupAction?.action === "complete" ? "Go back" : "Keep appointment"}
+        error={pickupError}
+        busy={updatingPickup}
+        onCancel={() => setPendingPickupAction(null)}
+        onConfirm={() => {
+          if (pendingPickupAction) void updatePickup(pendingPickupAction.appointmentId, pendingPickupAction.action);
+        }}
+      />
     </RegistrarPortalShell>
   );
 }
