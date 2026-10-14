@@ -26,7 +26,7 @@ function TreasuryLogoutButton() {
 }
 
 export function TreasuryPortalShell({ children }: { children: React.ReactNode }) {
-  const { isOpen, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
+  const { isOpen, isDesktop, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
 
   return (
     <div className="portal-home portal-home-registrar registrar-portal treasury-portal">
@@ -58,8 +58,8 @@ export function TreasuryPortalShell({ children }: { children: React.ReactNode })
           ref={drawerRef}
           id="treasury-navigation-drawer"
           className={`registrar-sidebar portal-navigation-drawer${isOpen ? " is-open" : ""}`}
-          aria-hidden={!isOpen}
-          inert={!isOpen}
+          aria-hidden={!isOpen && !isDesktop}
+          inert={!isOpen && !isDesktop}
         >
           <nav aria-label="Treasury navigation">
             {treasuryLinks.map((item) => (

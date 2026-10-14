@@ -5,13 +5,26 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 export function usePortalDrawer() {
   const isOpenRef = useRef(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    if (!isOpen) {
+    const desktopMedia = window.matchMedia("(min-width: 761px)");
+    const updateDesktopState = () => {
+      setIsDesktop(desktopMedia.matches);
+      if (desktopMedia.matches) setIsOpen(false);
+    };
+
+    updateDesktopState();
+    desktopMedia.addEventListener("change", updateDesktopState);
+    return () => desktopMedia.removeEventListener("change", updateDesktopState);
+  }, []);
+
+  useEffect(() => {
+    if (!isOpen || isDesktop) {
       if (isOpenRef.current) {
-        menuButtonRef.current?.focus();
+        if (!isDesktop) menuButtonRef.current?.focus();
       }
       isOpenRef.current = false;
       return;
@@ -48,10 +61,11 @@ export function usePortalDrawer() {
       document.body.style.overflow = previousOverflow;
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [isOpen, setIsOpen]);
+  }, [isDesktop, isOpen, setIsOpen]);
 
   return {
     isOpen,
+    isDesktop,
     setIsOpen,
     menuButtonRef,
     drawerRef,

@@ -12,7 +12,7 @@ const registrarLinks = [
 ];
 
 export function RegistrarPortalShell({ children }: { children: React.ReactNode }) {
-  const { isOpen, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
+  const { isOpen, isDesktop, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
 
   return (
     <div className="portal-home registrar-portal">
@@ -44,8 +44,8 @@ export function RegistrarPortalShell({ children }: { children: React.ReactNode }
           ref={drawerRef}
           id="registrar-navigation-drawer"
           className={`registrar-sidebar portal-navigation-drawer${isOpen ? " is-open" : ""}`}
-          aria-hidden={!isOpen}
-          inert={!isOpen}
+          aria-hidden={!isOpen && !isDesktop}
+          inert={!isOpen && !isDesktop}
         >
           <nav aria-label="Registrar navigation">
             {registrarLinks.map((item) => (

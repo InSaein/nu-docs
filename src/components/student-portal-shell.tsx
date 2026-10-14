@@ -20,7 +20,7 @@ export function StudentBreadcrumb({ currentPage }: { currentPage: string }) {
 }
 
 export function StudentPortalShell({ children }: { children: React.ReactNode }) {
-  const { isOpen, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
+  const { isOpen, isDesktop, setIsOpen, menuButtonRef, drawerRef } = usePortalDrawer();
 
   return (
     <div className="portal-home student-admin-portal">
@@ -42,8 +42,8 @@ export function StudentPortalShell({ children }: { children: React.ReactNode }) 
           ref={drawerRef}
           id="student-navigation-drawer"
           className={`student-sidebar portal-navigation-drawer${isOpen ? " is-open" : ""}`}
-          aria-hidden={!isOpen}
-          inert={!isOpen}
+          aria-hidden={!isOpen && !isDesktop}
+          inert={!isOpen && !isDesktop}
         >
           <nav aria-label="Student navigation">
             {studentLinks.map((item) => (
