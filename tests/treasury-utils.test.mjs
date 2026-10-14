@@ -24,6 +24,7 @@ function loadTypeScript(relativePath) {
 const { csvCell, csvDocument } = loadTypeScript("src/lib/csv.ts");
 const { resolveDateRange } = loadTypeScript("src/lib/treasury-report-utils.ts");
 const { isPortalRole, portalHomePath } = loadTypeScript("src/lib/roles.ts");
+const { isPreferencePalette, isThemeMode } = loadTypeScript("src/lib/user-preferences.ts");
 
 test("CSV cells quote delimiters, quotes, and line breaks", () => {
   assert.equal(csvCell('request,"one"\nnext'), '"request,""one""\nnext"');
@@ -59,6 +60,21 @@ test("only the three current portal roles are accepted", () => {
     assert.equal(isPortalRole(value), false);
   }
   assert.equal(portalHomePath("TREASURY"), "/treasury/dashboard");
+});
+
+test("settings accepts only the supported palette and theme values", () => {
+  for (const palette of ["NU_BLUE", "EMERALD", "VIOLET", "AMBER"]) {
+    assert.equal(isPreferencePalette(palette), true);
+  }
+  for (const value of ["BLUE", "RED", "", null, undefined]) {
+    assert.equal(isPreferencePalette(value), false);
+  }
+  for (const mode of ["LIGHT", "DARK", "SYSTEM"]) {
+    assert.equal(isThemeMode(mode), true);
+  }
+  for (const value of ["AUTO", "dark", "", null, undefined]) {
+    assert.equal(isThemeMode(value), false);
+  }
 });
 
 test("audit migration backfills only decisions with recorded reviewer and time", () => {

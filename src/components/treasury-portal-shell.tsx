@@ -6,6 +6,7 @@ import { PortalFooter } from "@/components/app-shell";
 import { PortalMenuButton, usePortalDrawer } from "@/components/portal-drawer";
 import { LoadingSpinner } from "@/components/loading-spinner";
 import { logout } from "@/lib/server/auth";
+import { PortalSettingsLink } from "@/components/portal-settings-link";
 
 const treasuryLinks = [
   { icon: "⌂", label: "Dashboard", href: "/treasury/dashboard" },
@@ -67,9 +68,12 @@ export function TreasuryPortalShell({ children }: { children: React.ReactNode })
               </Link>
             ))}
           </nav>
-          <form className="registrar-sidebar-logout" action={logout}>
-            <TreasuryLogoutButton />
-          </form>
+          <div className="portal-sidebar-actions">
+            <PortalSettingsLink />
+            <form className="registrar-sidebar-logout" action={logout}>
+              <TreasuryLogoutButton />
+            </form>
+          </div>
         </aside>
         <main className="registrar-main">{children}</main>
       </div>

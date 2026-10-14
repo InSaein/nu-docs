@@ -84,7 +84,7 @@ function LoginForm({
           onClick={() => onModeChange("admin")}
         >
           <RoleIcon mode="admin" />
-          <span>Admin</span>
+          <span>Registrar</span>
         </button>
         <button
           className="login-role-option"
@@ -99,24 +99,24 @@ function LoginForm({
         </button>
       </div>
       <span className="brand-mark">N</span>
-      <h1 className="display-font">{isTreasury ? "Treasury sign in" : isAdmin ? "Admin sign in" : "Sign in"}</h1>
+      <h1 className="display-font">{isTreasury ? "Treasury sign in" : isAdmin ? "Registrar sign in" : "Sign in"}</h1>
       <p className="muted login-description">
         {isTreasury
           ? "Use your National University Treasury account."
           : isAdmin
-            ? "Use your National University administrator account."
+            ? "Use your National University Registrar account."
             : "Use your National University account."}
       </p>
       {registered && !isStaff && <p className="notice" role="status">Account created successfully. Please log in.</p>}
       <div className="field">
-        <label htmlFor={identifierId}>{isTreasury ? "Treasury ID" : isAdmin ? "Admin ID" : "Student Number"}</label>
+        <label htmlFor={identifierId}>{isTreasury ? "Treasury ID" : isAdmin ? "Registrar ID" : "Student Number"}</label>
         <input
           id={identifierId}
           ref={identifierRef}
           name="studentNumber"
           autoComplete="username"
           required
-          placeholder={isTreasury ? "Treasury ID" : isAdmin ? "ADMIN-00001" : "2026-00001"}
+          placeholder={isTreasury ? "Treasury ID" : isAdmin ? "Registrar ID" : "2026-00001"}
         />
       </div>
       <div className="field">
@@ -152,7 +152,7 @@ function LoginForm({
           type="button"
           onClick={submitDemoLogin}
           disabled={pending || treasuryDemoPending}
-          aria-label={`Demo Login as ${isAdmin ? "Admin" : "Student"}`}
+          aria-label={`Demo Login as ${isAdmin ? "Registrar" : "Student"}`}
           style={{ width: "100%", marginTop: 9 }}
         >
           Demo Login
@@ -179,7 +179,7 @@ function LoginForm({
           <p className="muted login-footnote">Use your National University account to sign in.</p>
         </>
       )}
-      {isAdmin && <p className="muted login-footnote">Administrator access is restricted to authorized staff.</p>}
+      {isAdmin && <p className="muted login-footnote">Registrar access is restricted to authorized staff.</p>}
       {isTreasury && <p className="muted login-footnote">Treasury access is restricted to authorized staff.</p>}
     </form>
   );
@@ -203,7 +203,7 @@ function LoginContent({ showDemoLogin }: { showDemoLogin: boolean }) {
           {mode === "treasury"
             ? <>Treasury<br />portal.</>
             : mode === "admin"
-              ? <>Admin<br />portal.</>
+              ? <>Registrar<br />portal.</>
               : <>Your campus<br />is moving.</>}
         </h1>
         <p>

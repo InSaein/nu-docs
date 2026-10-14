@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PortalFooter } from "@/components/app-shell";
 import { RegistrarLogoutForm } from "@/components/registrar-logout-form";
 import { PortalMenuButton, usePortalDrawer } from "@/components/portal-drawer";
+import { PortalSettingsLink } from "@/components/portal-settings-link";
 
 const registrarLinks = [
   { icon: "⌂", label: "Dashboard", href: "/registrar/dashboard" },
@@ -53,7 +54,10 @@ export function RegistrarPortalShell({ children }: { children: React.ReactNode }
               </Link>
             ))}
           </nav>
-          <RegistrarLogoutForm />
+          <div className="portal-sidebar-actions">
+            <PortalSettingsLink />
+            <RegistrarLogoutForm />
+          </div>
         </aside>
         <main className="registrar-main">{children}</main>
       </div>

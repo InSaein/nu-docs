@@ -4,6 +4,7 @@ import Link from "next/link";
 import { StudentPortalHeader } from "@/components/student-portal-header";
 import { StudentLogoutForm } from "@/components/student-logout-form";
 import { PortalFooter } from "@/components/app-shell";
+import { PortalSettingsLink } from "@/components/portal-settings-link";
 import { usePortalDrawer } from "@/components/portal-drawer";
 
 const studentLinks = [
@@ -51,7 +52,10 @@ export function StudentPortalShell({ children }: { children: React.ReactNode }) 
               </Link>
             ))}
           </nav>
-          <StudentLogoutForm />
+          <div className="portal-sidebar-actions">
+            <PortalSettingsLink />
+            <StudentLogoutForm />
+          </div>
         </aside>
         <main className="student-admin-main student-page-main">{children}</main>
       </div>

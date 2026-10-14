@@ -87,7 +87,7 @@ button, input, select, textarea { font: inherit; }
 .hero-copy p { max-width: 430px; color: var(--ink-soft); line-height: 1.7; }
 .hero-actions { display: flex; gap: 10px; margin-top: 24px; flex-wrap: wrap; }
 .login-panel { display: flex; align-items: center; justify-content: center; padding: 30px; }
-.login-card { width: min(100%, 410px); padding: 38px; }
+.login-card { width: min(100%, 410px); min-height: 720px; padding: 38px; }
 .login-card h1 { font-size: 32px; margin: 12px 0 8px; }
 .login-demo-button { border: 1px solid var(--primary); background: #fff; color: var(--primary); }
 .login-demo-button:hover { background: var(--primary-soft); }
@@ -504,16 +504,16 @@ button, input, select, textarea { font: inherit; }
 .portal-home-registrar .surface { border-radius: 0; box-shadow: 0 2px 2px rgba(0, 0, 0, .1); }
 .portal-home-registrar .stat { min-height: 110px; padding: 17px; }
 .portal-home-registrar .stat-number { color: var(--primary); font-size: 28px; margin: 11px 0 2px; }
-.registrar-portal .registrar-stats > .stat:nth-child(1) { border-left: 4px solid var(--primary); background: #f0f2fc; }
-.registrar-portal .registrar-stats > .stat:nth-child(1) .stat-number { color: var(--primary); }
-.registrar-portal .registrar-stats > .stat:nth-child(2) { border-left: 4px solid #d4ad18; background: #fffbed; }
-.registrar-portal .registrar-stats > .stat:nth-child(2) .stat-number { color: #856700; }
-.registrar-portal .registrar-stats > .stat:nth-child(3) { border-left: 4px solid #d97718; background: #fff6ed; }
-.registrar-portal .registrar-stats > .stat:nth-child(3) .stat-number { color: #a64b00; }
-.registrar-portal .registrar-stats > .stat:nth-child(4) { border-left: 4px solid #388653; background: #eff8f1; }
-.registrar-portal .registrar-stats > .stat:nth-child(4) .stat-number { color: #287143; }
-.registrar-portal .registrar-stats > .stat:nth-child(5) { border-left: 4px solid #238391; background: #edf8f9; }
-.registrar-portal .registrar-stats > .stat:nth-child(5) .stat-number { color: #176b77; }
+.registrar-portal .registrar-stats > .stat:nth-child(1) { border-left: 4px solid var(--stat-accent-1); background: var(--stat-surface-1); }
+.registrar-portal .registrar-stats > .stat:nth-child(1) .stat-number { color: var(--stat-value-1); }
+.registrar-portal .registrar-stats > .stat:nth-child(2) { border-left: 4px solid var(--stat-accent-2); background: var(--stat-surface-2); }
+.registrar-portal .registrar-stats > .stat:nth-child(2) .stat-number { color: var(--stat-value-2); }
+.registrar-portal .registrar-stats > .stat:nth-child(3) { border-left: 4px solid var(--stat-accent-3); background: var(--stat-surface-3); }
+.registrar-portal .registrar-stats > .stat:nth-child(3) .stat-number { color: var(--stat-value-3); }
+.registrar-portal .registrar-stats > .stat:nth-child(4) { border-left: 4px solid var(--stat-accent-4); background: var(--stat-surface-4); }
+.registrar-portal .registrar-stats > .stat:nth-child(4) .stat-number { color: var(--stat-value-4); }
+.registrar-portal .registrar-stats > .stat:nth-child(5) { border-left: 4px solid var(--stat-accent-5); background: var(--stat-surface-5); }
+.registrar-portal .registrar-stats > .stat:nth-child(5) .stat-number { color: var(--stat-value-5); }
 .portal-home-registrar .section-heading { margin: 28px 0 13px; }
 .portal-home-registrar .section-heading h2 { color: var(--primary); font-size: 16px; }
 .portal-home-registrar .history-toolbar { border-radius: 0; box-shadow: 0 2px 2px rgba(0, 0, 0, .08); padding: 11px; }
@@ -919,6 +919,567 @@ button, input, select, textarea { font: inherit; }
 }
 @media (prefers-reduced-motion: reduce) {
   .portal-navigation-drawer { transition: none; }
+}
+
+.portal-sidebar-actions { display: grid; gap: 4px; margin-top: auto; }
+.portal-sidebar-actions .student-sidebar-logout,
+.portal-sidebar-actions .registrar-sidebar-logout { margin-top: 0; }
+.portal-settings-link { display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-left: 3px solid transparent; color: #d7d8ed; font-size: 13px; }
+.portal-settings-link > span { width: 18px; color: var(--accent); text-align: center; }
+.portal-settings-link:hover,
+.portal-settings-link:focus-visible,
+.portal-settings-link[aria-current="page"] { background: var(--primary-dark); border-left-color: var(--accent); color: #fff; outline: none; }
+.registrar-sidebar .portal-sidebar-actions { width: 100%; }
+.student-sidebar .portal-sidebar-actions { width: 100%; }
+@media (max-width: 760px) {
+  .student-sidebar.portal-navigation-drawer .portal-sidebar-actions { margin-top: 10px; padding-top: 8px; border-top: 1px solid #5962a3; }
+  .registrar-sidebar.portal-navigation-drawer .portal-sidebar-actions { margin-top: 10px; padding-top: 8px; border-top: 1px solid #5962a3; }
+}
+
+.settings-page {
+  min-height: 100vh;
+  padding: 22px clamp(16px, 4vw, 56px) 28px;
+  background: var(--background);
+  color: var(--foreground);
+}
+.settings-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: min(100%, 1040px); margin: 0 auto 26px; padding-bottom: 16px; border-bottom: 1px solid var(--line); }
+.settings-brand { display: flex; align-items: center; gap: 10px; color: var(--primary); }
+.settings-brand > span:last-child { display: grid; gap: 2px; }
+.settings-brand small { color: var(--ink-soft); font-size: 9px; letter-spacing: .1em; }
+.settings-back-link { color: var(--primary); font-size: 13px; font-weight: 700; }
+.settings-content { display: grid; gap: 16px; width: min(100%, 1040px); margin: 0 auto; }
+.settings-title { margin-bottom: 4px; }
+.settings-title h1 { margin-top: 7px; color: var(--primary-dark); }
+.settings-title p { margin: 0; }
+.settings-section { display: grid; gap: 18px; padding: 22px; }
+.settings-section-heading h2 { margin: 0 0 5px; color: var(--primary); font-size: 18px; }
+.settings-section-heading p { margin: 0; font-size: 13px; }
+.settings-fieldset { display: grid; gap: 10px; min-width: 0; margin: 0; padding: 0; border: 0; }
+.settings-fieldset legend { margin-bottom: 10px; font-size: 13px; font-weight: 700; }
+.settings-palette-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.settings-palette-option { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); color: var(--foreground); text-align: left; cursor: pointer; }
+.settings-palette-option[aria-pressed="true"] { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent); }
+.settings-palette-option:focus-visible,
+.settings-choice:focus-visible,
+.settings-toggle-row input:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.settings-palette-preview { display: flex; gap: 5px; grid-column: 1 / -1; }
+.settings-palette-preview i { width: 28px; height: 22px; border: 1px solid var(--line); border-radius: 5px; }
+.settings-selection-indicator { min-width: 18px; color: var(--primary); font-weight: 800; text-align: right; }
+.settings-choice-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.settings-choice { display: grid; justify-items: start; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface-soft); color: var(--foreground); font-weight: 700; text-align: left; cursor: pointer; }
+.settings-choice[aria-pressed="true"] { border-color: var(--primary); box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 18%, transparent); }
+.settings-choice small { color: var(--ink-soft); font-size: 11px; font-weight: 400; }
+.settings-mode-preview { display: block; width: 100%; height: 42px; border: 1px solid var(--line); border-radius: 5px; background: #fff; }
+.settings-mode-dark { background: #20242e; }
+.settings-mode-system { background: linear-gradient(110deg, #fff 50%, #20242e 50%); }
+.settings-account-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin: 0; }
+.settings-account-grid > div { min-width: 0; padding: 12px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
+.settings-account-grid dt { margin-bottom: 5px; color: var(--ink-soft); font-size: 12px; }
+.settings-account-grid dd { margin: 0; overflow-wrap: anywhere; font-size: 14px; font-weight: 700; }
+.settings-support-note { margin: 0; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
+.settings-locked-preference { display: flex; align-items: center; gap: 12px; padding: 13px; border: 1px solid var(--line); border-radius: 7px; background: var(--surface-soft); }
+.settings-preference-check { display: grid; width: 24px; height: 24px; flex: 0 0 24px; place-items: center; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-weight: 800; }
+.settings-locked-preference > span:nth-child(2) { display: grid; gap: 3px; }
+.settings-locked-preference small { color: var(--ink-soft); font-size: 12px; }
+.settings-always-on { margin-left: auto; color: var(--primary); font-size: 12px; font-weight: 700; white-space: nowrap; }
+.settings-toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 13px 0; border-top: 1px solid var(--line); cursor: pointer; }
+.settings-toggle-row > span { display: grid; gap: 4px; }
+.settings-toggle-row small { color: var(--ink-soft); font-size: 12px; }
+.settings-toggle-row input { width: 20px; height: 20px; flex: 0 0 20px; accent-color: var(--primary); cursor: pointer; }
+.settings-save-status { min-height: 18px; margin: -12px 0 0; color: var(--ink-soft); font-size: 12px; }
+.settings-page-footer { width: min(100%, 1040px); margin: 22px auto 0; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 11px; }
+
+.user-preferences-theme {
+  --background: #fafafa;
+  --foreground: #303030;
+  --ink-soft: #5d626c;
+  --line: #dfe1e7;
+  --surface: #fff;
+  --surface-soft: #f8f8fa;
+  --stat-surface-1: #f0f2fc;
+  --stat-value-1: var(--primary);
+  --stat-accent-1: var(--primary);
+  --stat-surface-2: #fffbed;
+  --stat-value-2: #856700;
+  --stat-accent-2: #d4ad18;
+  --stat-surface-3: #fff6ed;
+  --stat-value-3: #a64b00;
+  --stat-accent-3: #d97718;
+  --stat-surface-4: #eff8f1;
+  --stat-value-4: #287143;
+  --stat-accent-4: #388653;
+  --stat-surface-5: #edf8f9;
+  --stat-value-5: #176b77;
+  --stat-accent-5: #238391;
+}
+.user-preferences-theme[data-palette="nu-blue"] { --primary: #35408f; --primary-dark: #252d68; --primary-soft: #eef0fb; --accent: #f0d234; --accent-soft: #fff9d8; }
+.user-preferences-theme[data-palette="emerald"] { --primary: #147d5a; --primary-dark: #0e5c42; --primary-soft: #e5f5ed; --accent: #39a879; --accent-soft: #e4f7ed; }
+.user-preferences-theme[data-palette="violet"] { --primary: #6941a5; --primary-dark: #4b2d7e; --primary-soft: #f0eafb; --accent: #9a75d5; --accent-soft: #f1eafa; }
+.user-preferences-theme[data-palette="amber"] { --primary: #9b5d07; --primary-dark: #784300; --primary-soft: #fff2d9; --accent: #e6a23c; --accent-soft: #fff4df; }
+.user-preferences-theme .portal-home { background: var(--background); color: var(--foreground); }
+.user-preferences-theme .registrar-portal { background: var(--background); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] {
+  --background: #151821;
+  --foreground: #e5e8ee;
+  --ink-soft: #aeb6c4;
+  --line: #383e4a;
+  --surface: #20242e;
+  --surface-soft: #252a35;
+  --accent-soft: #393522;
+  --stat-surface-1: color-mix(in srgb, var(--primary) 12%, #20242e);
+  --stat-value-1: var(--primary);
+  --stat-accent-1: var(--primary);
+  --stat-surface-2: #302d21;
+  --stat-value-2: #dfc875;
+  --stat-accent-2: #a8914d;
+  --stat-surface-3: #32281f;
+  --stat-value-3: #e0ad7b;
+  --stat-accent-3: #a8754b;
+  --stat-surface-4: #233128;
+  --stat-value-4: #91c99d;
+  --stat-accent-4: #5a8e68;
+  --stat-surface-5: #223035;
+  --stat-value-5: #8dc2c9;
+  --stat-accent-5: #558a92;
+}
+.user-preferences-theme[data-theme-mode="dark"][data-palette="nu-blue"] { --primary: #aab4ed; --primary-dark: #29345f; --primary-soft: #293149; --accent: #d1c36d; }
+.user-preferences-theme[data-theme-mode="dark"][data-palette="emerald"] { --primary: #83c7a7; --primary-dark: #1d4938; --primary-soft: #233a32; --accent: #73b994; }
+.user-preferences-theme[data-theme-mode="dark"][data-palette="violet"] { --primary: #b9a2dc; --primary-dark: #44335f; --primary-soft: #342c42; --accent: #a58acb; }
+.user-preferences-theme[data-theme-mode="dark"][data-palette="amber"] { --primary: #dfb978; --primary-dark: #594321; --primary-soft: #3a3124; --accent: #cda35f; }
+@media (prefers-color-scheme: dark) {
+  .user-preferences-theme[data-theme-mode="system"] {
+    --background: #151821;
+    --foreground: #e5e8ee;
+    --ink-soft: #aeb6c4;
+    --line: #383e4a;
+    --surface: #20242e;
+    --surface-soft: #252a35;
+    --accent-soft: #393522;
+    --stat-surface-1: color-mix(in srgb, var(--primary) 12%, #20242e);
+    --stat-value-1: var(--primary);
+    --stat-accent-1: var(--primary);
+    --stat-surface-2: #302d21;
+    --stat-value-2: #dfc875;
+    --stat-accent-2: #a8914d;
+    --stat-surface-3: #32281f;
+    --stat-value-3: #e0ad7b;
+    --stat-accent-3: #a8754b;
+    --stat-surface-4: #233128;
+    --stat-value-4: #91c99d;
+    --stat-accent-4: #5a8e68;
+    --stat-surface-5: #223035;
+    --stat-value-5: #8dc2c9;
+    --stat-accent-5: #558a92;
+  }
+  .user-preferences-theme[data-theme-mode="system"][data-palette="nu-blue"] { --primary: #aab4ed; --primary-dark: #29345f; --primary-soft: #293149; --accent: #d1c36d; }
+  .user-preferences-theme[data-theme-mode="system"][data-palette="emerald"] { --primary: #83c7a7; --primary-dark: #1d4938; --primary-soft: #233a32; --accent: #73b994; }
+  .user-preferences-theme[data-theme-mode="system"][data-palette="violet"] { --primary: #b9a2dc; --primary-dark: #44335f; --primary-soft: #342c42; --accent: #a58acb; }
+  .user-preferences-theme[data-theme-mode="system"][data-palette="amber"] { --primary: #dfb978; --primary-dark: #594321; --primary-soft: #3a3124; --accent: #cda35f; }
+  .user-preferences-theme[data-theme-mode="system"] .portal-header,
+  .user-preferences-theme[data-theme-mode="system"] .portal-navigation-drawer,
+  .user-preferences-theme[data-theme-mode="system"] .student-sidebar,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-sidebar,
+  .user-preferences-theme[data-theme-mode="system"] .portal-menu-button { background-color: var(--primary-dark); }
+  .user-preferences-theme[data-theme-mode="system"] .portal-home,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home .registrar-main,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home .student-admin-main,
+  .user-preferences-theme[data-theme-mode="system"] .settings-page { background-color: var(--background); color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .surface,
+  .user-preferences-theme[data-theme-mode="system"] .portal-feature-card,
+  .user-preferences-theme[data-theme-mode="system"] .settings-palette-option,
+  .user-preferences-theme[data-theme-mode="system"] .settings-choice,
+  .user-preferences-theme[data-theme-mode="system"] .settings-account-grid > div,
+  .user-preferences-theme[data-theme-mode="system"] .settings-locked-preference { border-color: var(--line); background-color: var(--surface); color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] input:not([type="checkbox"]):not([type="radio"]),
+  .user-preferences-theme[data-theme-mode="system"] select,
+  .user-preferences-theme[data-theme-mode="system"] textarea,
+  .user-preferences-theme[data-theme-mode="system"] .portal-search { border-color: var(--line); background-color: #191d26; color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .portal-search input { background: transparent; color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .portal-footer,
+  .user-preferences-theme[data-theme-mode="system"] .portal-footer a,
+  .user-preferences-theme[data-theme-mode="system"] .settings-account-grid dt,
+  .user-preferences-theme[data-theme-mode="system"] .settings-support-note,
+  .user-preferences-theme[data-theme-mode="system"] .settings-toggle-row small,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .data-table th,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home .muted,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home .empty-state { color: var(--ink-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .settings-title h1,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .page-title,
+  .user-preferences-theme[data-theme-mode="system"] .student-admin-main .page-title,
+  .user-preferences-theme[data-theme-mode="system"] .section-heading h2 { color: var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .topbar,
+  .user-preferences-theme[data-theme-mode="system"] .student-admin-main .topbar,
+  .user-preferences-theme[data-theme-mode="system"] .student-section-heading,
+  .user-preferences-theme[data-theme-mode="system"] .student-recent-request-details { border-color: var(--line); }
+  .user-preferences-theme[data-theme-mode="system"] .btn-primary { background: var(--primary-dark); color: #fff; border: 1px solid var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .btn-primary:hover { background: var(--primary-dark); filter: brightness(1.2); }
+  .user-preferences-theme[data-theme-mode="system"] .status-processing { color: #dfc875; background: #393522; }
+  .user-preferences-theme[data-theme-mode="system"] .status-ready,
+  .user-preferences-theme[data-theme-mode="system"] .status-approved { color: #b4bced; background: #293149; }
+  .user-preferences-theme[data-theme-mode="system"] .status-rejected { color: #e2a09b; background: #422c2d; }
+  .user-preferences-theme[data-theme-mode="system"] .status-pending { color: var(--primary); background: var(--primary-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .status-submitted,
+  .user-preferences-theme[data-theme-mode="system"] .status-under-review { color: #91c5dc; background: #233641; }
+  .user-preferences-theme[data-theme-mode="system"] .status-ready-for-release,
+  .user-preferences-theme[data-theme-mode="system"] .status-completed { color: #91c99d; background: #233629; }
+  .user-preferences-theme[data-theme-mode="system"] .status-cancelled { color: #b1b7c0; background: #2d3139; }
+  .user-preferences-theme[data-theme-mode="system"] .student-status-card.status-submitted strong,
+  .user-preferences-theme[data-theme-mode="system"] .student-status-card.status-under-review strong { color: #dfc875; }
+  .user-preferences-theme[data-theme-mode="system"] .student-status-card.status-processing strong { color: #e0ad7b; }
+  .user-preferences-theme[data-theme-mode="system"] .student-status-card.status-ready-for-release strong { color: #91c99d; }
+  .user-preferences-theme[data-theme-mode="system"] .student-status-card.status-completed strong { color: #8dc2c9; }
+  .user-preferences-theme[data-theme-mode="system"] .payment-paid-badge { color: #91c99d; background: #233629; }
+  .user-preferences-theme[data-theme-mode="system"] .payment-rejected-badge { color: #e2a09b; background: #422c2d; }
+}
+.user-preferences-theme[data-theme-mode="dark"] .portal-header,
+.user-preferences-theme[data-theme-mode="dark"] .portal-navigation-drawer,
+.user-preferences-theme[data-theme-mode="dark"] .student-sidebar,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-sidebar,
+.user-preferences-theme[data-theme-mode="dark"] .portal-menu-button { background-color: var(--primary-dark); }
+.user-preferences-theme[data-theme-mode="dark"] .portal-home,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home .registrar-main,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home .student-admin-main,
+.user-preferences-theme[data-theme-mode="dark"] .settings-page { background-color: var(--background); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .surface,
+.user-preferences-theme[data-theme-mode="dark"] .portal-feature-card,
+.user-preferences-theme[data-theme-mode="dark"] .settings-palette-option,
+.user-preferences-theme[data-theme-mode="dark"] .settings-choice,
+.user-preferences-theme[data-theme-mode="dark"] .settings-account-grid > div,
+.user-preferences-theme[data-theme-mode="dark"] .settings-locked-preference { border-color: var(--line); background-color: var(--surface); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] input:not([type="checkbox"]):not([type="radio"]),
+.user-preferences-theme[data-theme-mode="dark"] select,
+.user-preferences-theme[data-theme-mode="dark"] textarea,
+.user-preferences-theme[data-theme-mode="dark"] .portal-search { border-color: var(--line); background-color: #191d26; color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .portal-search input { background: transparent; color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .portal-footer,
+.user-preferences-theme[data-theme-mode="dark"] .portal-footer a,
+.user-preferences-theme[data-theme-mode="dark"] .settings-account-grid dt,
+.user-preferences-theme[data-theme-mode="dark"] .settings-support-note,
+.user-preferences-theme[data-theme-mode="dark"] .settings-toggle-row small { color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .settings-title h1,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .page-title,
+.user-preferences-theme[data-theme-mode="dark"] .student-admin-main .page-title,
+.user-preferences-theme[data-theme-mode="dark"] .section-heading h2 { color: var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .topbar,
+.user-preferences-theme[data-theme-mode="dark"] .student-admin-main .topbar,
+.user-preferences-theme[data-theme-mode="dark"] .student-section-heading,
+.user-preferences-theme[data-theme-mode="dark"] .student-recent-request-details { border-color: var(--line); }
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .data-table th,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home .muted,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home .empty-state { color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .btn-primary { background: var(--primary-dark); color: #fff; border: 1px solid var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .btn-primary:hover { background: var(--primary-dark); filter: brightness(1.2); }
+.user-preferences-theme[data-theme-mode="dark"] .status-processing { color: #dfc875; background: #393522; }
+.user-preferences-theme[data-theme-mode="dark"] .status-ready,
+.user-preferences-theme[data-theme-mode="dark"] .status-approved { color: #b4bced; background: #293149; }
+.user-preferences-theme[data-theme-mode="dark"] .status-rejected { color: #e2a09b; background: #422c2d; }
+.user-preferences-theme[data-theme-mode="dark"] .status-pending { color: var(--primary); background: var(--primary-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .status-submitted,
+.user-preferences-theme[data-theme-mode="dark"] .status-under-review { color: #91c5dc; background: #233641; }
+.user-preferences-theme[data-theme-mode="dark"] .status-ready-for-release,
+.user-preferences-theme[data-theme-mode="dark"] .status-completed { color: #91c99d; background: #233629; }
+.user-preferences-theme[data-theme-mode="dark"] .status-cancelled { color: #b1b7c0; background: #2d3139; }
+.user-preferences-theme[data-theme-mode="dark"] .student-status-card.status-submitted strong,
+.user-preferences-theme[data-theme-mode="dark"] .student-status-card.status-under-review strong { color: #dfc875; }
+.user-preferences-theme[data-theme-mode="dark"] .student-status-card.status-processing strong { color: #e0ad7b; }
+.user-preferences-theme[data-theme-mode="dark"] .student-status-card.status-ready-for-release strong { color: #91c99d; }
+.user-preferences-theme[data-theme-mode="dark"] .student-status-card.status-completed strong { color: #8dc2c9; }
+.user-preferences-theme[data-theme-mode="dark"] .payment-paid-badge { color: #91c99d; background: #233629; }
+.user-preferences-theme[data-theme-mode="dark"] .payment-rejected-badge { color: #e2a09b; background: #422c2d; }
+.user-preferences-theme[data-theme-mode="dark"] {
+  --control-surface: #191d26;
+  --table-border: #343a46;
+  --hover-surface: #292f3b;
+  --focus-ring: color-mix(in srgb, var(--primary) 55%, transparent);
+}
+.user-preferences-theme[data-theme-mode="dark"] .portal-home-registrar,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-portal { background: var(--background); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .student-admin-main .page-title,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home-registrar .page-title,
+.user-preferences-theme[data-theme-mode="dark"] .student-profile-panel h2,
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-section > .student-section-heading h2,
+.user-preferences-theme[data-theme-mode="dark"] .student-quick-action h2,
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-row strong,
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-row b,
+.user-preferences-theme[data-theme-mode="dark"] .student-profile-panel dd,
+.user-preferences-theme[data-theme-mode="dark"] .student-recent-requests .student-section-heading strong,
+.user-preferences-theme[data-theme-mode="dark"] .student-recent-request-details dd,
+.user-preferences-theme[data-theme-mode="dark"] .student-track-empty-state h2,
+.user-preferences-theme[data-theme-mode="dark"] .student-profile-section-heading h2,
+.user-preferences-theme[data-theme-mode="dark"] .document-choice em,
+.user-preferences-theme[data-theme-mode="dark"] .timeline-item.complete,
+.user-preferences-theme[data-theme-mode="dark"] .timeline-item.current,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field label,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .data-table td strong,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .section-heading h2,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home-registrar .section-heading h2 { color: var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .breadcrumb,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home-registrar .breadcrumb,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .data-table th,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .data-table th,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .form-heading p,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .document-choice small,
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-row small,
+.user-preferences-theme[data-theme-mode="dark"] .dashboard-notification small,
+.user-preferences-theme[data-theme-mode="dark"] .student-recent-request-documents,
+.user-preferences-theme[data-theme-mode="dark"] .admin-login-link,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .registrar-pagination-summary { color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .surface,
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-row,
+.user-preferences-theme[data-theme-mode="dark"] .student-status-card,
+.user-preferences-theme[data-theme-mode="dark"] .portal-feature-card,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .document-choice,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .document-choice.selected,
+.user-preferences-theme[data-theme-mode="dark"] .portal-home-registrar .history-toolbar { background-color: var(--surface); }
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-row,
+.user-preferences-theme[data-theme-mode="dark"] .dashboard-notification,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .topbar,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .topbar,
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-toolbar,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .form-heading.second,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .file-row,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .action-stack { border-color: var(--line); }
+.user-preferences-theme[data-theme-mode="dark"] .data-table th,
+.user-preferences-theme[data-theme-mode="dark"] .data-table td { border-bottom-color: var(--table-border); }
+.user-preferences-theme[data-theme-mode="dark"] .toolbar-search,
+.user-preferences-theme[data-theme-mode="dark"] .history-toolbar select,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-page-size select,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-main .toolbar-search,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .toolbar-search { border-color: var(--line); background-color: var(--surface); color: var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .toolbar-search input,
+.user-preferences-theme[data-theme-mode="dark"] .portal-search input { background: transparent; color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .portal-search { border-color: var(--line); background: var(--surface); color: var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .field input,
+.user-preferences-theme[data-theme-mode="dark"] .field select,
+.user-preferences-theme[data-theme-mode="dark"] .field textarea,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field input,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field select,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field textarea,
+.user-preferences-theme[data-theme-mode="dark"] .treasury-date-filter input,
+.user-preferences-theme[data-theme-mode="dark"] .treasury-report-filters input:not([type="hidden"]),
+.user-preferences-theme[data-theme-mode="dark"] .treasury-report-filters select,
+.user-preferences-theme[data-theme-mode="dark"] .treasury-report-filters input {
+  border-color: var(--line);
+  background: var(--control-surface);
+  color: var(--foreground);
+}
+.user-preferences-theme[data-theme-mode="dark"] input::placeholder,
+.user-preferences-theme[data-theme-mode="dark"] textarea::placeholder { color: var(--ink-soft); opacity: 1; }
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field input[readonly] { background: var(--surface-soft); color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field input:focus,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field select:focus,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .field textarea:focus,
+.user-preferences-theme[data-theme-mode="dark"] .toolbar-search:focus-within,
+.user-preferences-theme[data-theme-mode="dark"] .portal-search:focus-within,
+.user-preferences-theme[data-theme-mode="dark"] .history-toolbar select:focus-visible,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-page-size select:focus-visible {
+  border-color: var(--primary);
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-row:hover,
+.user-preferences-theme[data-theme-mode="dark"] .student-dashboard-row:focus-visible,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .document-choice.selected,
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .track-search { background-color: var(--hover-surface); }
+.user-preferences-theme[data-theme-mode="dark"] .timeline-dot { background: var(--surface-soft); color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .timeline-item:not(:last-child)::after { border-color: var(--line); }
+.user-preferences-theme[data-theme-mode="dark"] .student-page-main .empty-state { border-color: var(--line); background: var(--surface); color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .btn-primary { background: var(--primary-dark); color: var(--foreground); border: 1px solid var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .btn-primary:hover { background: var(--primary-dark); filter: brightness(1.2); }
+.user-preferences-theme[data-theme-mode="dark"] .btn-quiet { background: var(--accent); color: #1b1d22; }
+.user-preferences-theme[data-theme-mode="dark"] .btn-secondary,
+.user-preferences-theme[data-theme-mode="dark"] .student-profile-cancel { border-color: var(--line); background: var(--surface-soft); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .btn-success { background: #356b49; color: #e2f1e6; }
+.user-preferences-theme[data-theme-mode="dark"] .btn-danger { border-color: #80504b; background: #422c2d; color: #e2a09b; }
+.user-preferences-theme[data-theme-mode="dark"] .student-profile-error { border-color: #854c4a; background: #422c2d; color: #e2a09b; }
+.user-preferences-theme[data-theme-mode="dark"] .student-profile-success,
+.user-preferences-theme[data-theme-mode="dark"] .inline-success { border-color: #4e795b; background: #233629; color: #91c99d; }
+.user-preferences-theme[data-theme-mode="dark"] .inline-error { border-color: #854c4a; background: #422c2d; color: #e2a09b; }
+.user-preferences-theme[data-theme-mode="dark"] .portal-logout { border-color: var(--line); background: var(--surface); color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .portal-logout:hover,
+.user-preferences-theme[data-theme-mode="dark"] .portal-logout:focus-visible { color: var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .student-sidebar.portal-navigation-drawer,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-sidebar.portal-navigation-drawer { background: var(--primary-dark); }
+.user-preferences-theme[data-theme-mode="dark"] .portal-settings-link:hover,
+.user-preferences-theme[data-theme-mode="dark"] .portal-settings-link:focus-visible,
+.user-preferences-theme[data-theme-mode="dark"] .portal-settings-link[aria-current="page"],
+.user-preferences-theme[data-theme-mode="dark"] .student-nav-link:hover,
+.user-preferences-theme[data-theme-mode="dark"] .student-nav-link:focus-visible,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-nav-link:hover,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-nav-link:focus-visible { background: color-mix(in srgb, var(--primary) 16%, var(--primary-dark)); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .student-nav-link,
+.user-preferences-theme[data-theme-mode="dark"] .registrar-nav-link,
+.user-preferences-theme[data-theme-mode="dark"] .portal-settings-link { color: #e1e5ed; }
+.user-preferences-theme[data-theme-mode="dark"] .portal-footer,
+.user-preferences-theme[data-theme-mode="dark"] .portal-footer a { color: var(--ink-soft); }
+.user-preferences-theme[data-theme-mode="dark"] .payment-dialog,
+.user-preferences-theme[data-theme-mode="dark"] .payment-confirmation-dialog .payment-confirmation-card { background: var(--surface); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .payment-dialog h2,
+.user-preferences-theme[data-theme-mode="dark"] .payment-confirmation-heading h3,
+.user-preferences-theme[data-theme-mode="dark"] .payment-dialog-amount strong,
+.user-preferences-theme[data-theme-mode="dark"] .payment-method-group h3 { color: var(--primary); }
+.user-preferences-theme[data-theme-mode="dark"] .payment-confirmation-qr { border-color: var(--line); background: var(--control-surface); color: var(--foreground); }
+.user-preferences-theme[data-theme-mode="dark"] .payment-confirmation-close { border-color: var(--line); background: var(--surface); color: var(--foreground); }
+@media (prefers-color-scheme: dark) {
+  .user-preferences-theme[data-theme-mode="system"] {
+    --control-surface: #191d26;
+    --table-border: #343a46;
+    --hover-surface: #292f3b;
+    --focus-ring: color-mix(in srgb, var(--primary) 55%, transparent);
+  }
+  .user-preferences-theme[data-theme-mode="system"] .portal-home-registrar,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-portal { background: var(--background); color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .student-admin-main .page-title,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home-registrar .page-title,
+  .user-preferences-theme[data-theme-mode="system"] .student-profile-panel h2,
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-section > .student-section-heading h2,
+  .user-preferences-theme[data-theme-mode="system"] .student-quick-action h2,
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-row strong,
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-row b,
+  .user-preferences-theme[data-theme-mode="system"] .student-profile-panel dd,
+  .user-preferences-theme[data-theme-mode="system"] .student-recent-requests .student-section-heading strong,
+  .user-preferences-theme[data-theme-mode="system"] .student-recent-request-details dd,
+  .user-preferences-theme[data-theme-mode="system"] .student-track-empty-state h2,
+  .user-preferences-theme[data-theme-mode="system"] .student-profile-section-heading h2,
+  .user-preferences-theme[data-theme-mode="system"] .document-choice em,
+  .user-preferences-theme[data-theme-mode="system"] .timeline-item.complete,
+  .user-preferences-theme[data-theme-mode="system"] .timeline-item.current,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field label,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .data-table td strong,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .section-heading h2,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home-registrar .section-heading h2 { color: var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .breadcrumb,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home-registrar .breadcrumb,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .data-table th,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .data-table th,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .form-heading p,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .document-choice small,
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-row small,
+  .user-preferences-theme[data-theme-mode="system"] .dashboard-notification small,
+  .user-preferences-theme[data-theme-mode="system"] .student-recent-request-documents,
+  .user-preferences-theme[data-theme-mode="system"] .admin-login-link,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .registrar-pagination-summary { color: var(--ink-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .surface,
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-row,
+  .user-preferences-theme[data-theme-mode="system"] .student-status-card,
+  .user-preferences-theme[data-theme-mode="system"] .portal-feature-card,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .document-choice,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .document-choice.selected,
+  .user-preferences-theme[data-theme-mode="system"] .portal-home-registrar .history-toolbar { background-color: var(--surface); }
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-row,
+  .user-preferences-theme[data-theme-mode="system"] .dashboard-notification,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .topbar,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .topbar,
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-toolbar,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .form-heading.second,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .file-row,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .action-stack { border-color: var(--line); }
+  .user-preferences-theme[data-theme-mode="system"] .data-table th,
+  .user-preferences-theme[data-theme-mode="system"] .data-table td { border-bottom-color: var(--table-border); }
+  .user-preferences-theme[data-theme-mode="system"] .toolbar-search,
+  .user-preferences-theme[data-theme-mode="system"] .history-toolbar select,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-page-size select,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-main .toolbar-search,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .toolbar-search { border-color: var(--line); background-color: var(--surface); color: var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .toolbar-search input,
+  .user-preferences-theme[data-theme-mode="system"] .portal-search input { background: transparent; color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .portal-search { border-color: var(--line); background: var(--surface); color: var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .field input,
+  .user-preferences-theme[data-theme-mode="system"] .field select,
+  .user-preferences-theme[data-theme-mode="system"] .field textarea,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field input,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field select,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field textarea,
+  .user-preferences-theme[data-theme-mode="system"] .treasury-date-filter input,
+  .user-preferences-theme[data-theme-mode="system"] .treasury-report-filters input:not([type="hidden"]),
+  .user-preferences-theme[data-theme-mode="system"] .treasury-report-filters select,
+  .user-preferences-theme[data-theme-mode="system"] .treasury-report-filters input {
+    border-color: var(--line);
+    background: var(--control-surface);
+    color: var(--foreground);
+  }
+  .user-preferences-theme[data-theme-mode="system"] input::placeholder,
+  .user-preferences-theme[data-theme-mode="system"] textarea::placeholder { color: var(--ink-soft); opacity: 1; }
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field input[readonly] { background: var(--surface-soft); color: var(--ink-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field input:focus,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field select:focus,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .field textarea:focus,
+  .user-preferences-theme[data-theme-mode="system"] .toolbar-search:focus-within,
+  .user-preferences-theme[data-theme-mode="system"] .portal-search:focus-within,
+  .user-preferences-theme[data-theme-mode="system"] .history-toolbar select:focus-visible,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-page-size select:focus-visible {
+    border-color: var(--primary);
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 1px;
+  }
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-row:hover,
+  .user-preferences-theme[data-theme-mode="system"] .student-dashboard-row:focus-visible,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .document-choice.selected,
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .track-search { background-color: var(--hover-surface); }
+  .user-preferences-theme[data-theme-mode="system"] .timeline-dot { background: var(--surface-soft); color: var(--ink-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .timeline-item:not(:last-child)::after { border-color: var(--line); }
+  .user-preferences-theme[data-theme-mode="system"] .student-page-main .empty-state { border-color: var(--line); background: var(--surface); color: var(--ink-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .btn-primary { background: var(--primary-dark); color: var(--foreground); border: 1px solid var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .btn-primary:hover { background: var(--primary-dark); filter: brightness(1.2); }
+  .user-preferences-theme[data-theme-mode="system"] .btn-quiet { background: var(--accent); color: #1b1d22; }
+  .user-preferences-theme[data-theme-mode="system"] .btn-secondary,
+  .user-preferences-theme[data-theme-mode="system"] .student-profile-cancel { border-color: var(--line); background: var(--surface-soft); color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .btn-success { background: #356b49; color: #e2f1e6; }
+  .user-preferences-theme[data-theme-mode="system"] .btn-danger { border-color: #80504b; background: #422c2d; color: #e2a09b; }
+  .user-preferences-theme[data-theme-mode="system"] .student-profile-error { border-color: #854c4a; background: #422c2d; color: #e2a09b; }
+  .user-preferences-theme[data-theme-mode="system"] .student-profile-success,
+  .user-preferences-theme[data-theme-mode="system"] .inline-success { border-color: #4e795b; background: #233629; color: #91c99d; }
+  .user-preferences-theme[data-theme-mode="system"] .inline-error { border-color: #854c4a; background: #422c2d; color: #e2a09b; }
+  .user-preferences-theme[data-theme-mode="system"] .portal-logout { border-color: var(--line); background: var(--surface); color: var(--ink-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .portal-logout:hover,
+  .user-preferences-theme[data-theme-mode="system"] .portal-logout:focus-visible { color: var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .student-sidebar.portal-navigation-drawer,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-sidebar.portal-navigation-drawer { background: var(--primary-dark); }
+  .user-preferences-theme[data-theme-mode="system"] .portal-settings-link:hover,
+  .user-preferences-theme[data-theme-mode="system"] .portal-settings-link:focus-visible,
+  .user-preferences-theme[data-theme-mode="system"] .portal-settings-link[aria-current="page"],
+  .user-preferences-theme[data-theme-mode="system"] .student-nav-link:hover,
+  .user-preferences-theme[data-theme-mode="system"] .student-nav-link:focus-visible,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-nav-link:hover,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-nav-link:focus-visible { background: color-mix(in srgb, var(--primary) 16%, var(--primary-dark)); color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .student-nav-link,
+  .user-preferences-theme[data-theme-mode="system"] .registrar-nav-link,
+  .user-preferences-theme[data-theme-mode="system"] .portal-settings-link { color: #e1e5ed; }
+  .user-preferences-theme[data-theme-mode="system"] .portal-footer,
+  .user-preferences-theme[data-theme-mode="system"] .portal-footer a { color: var(--ink-soft); }
+  .user-preferences-theme[data-theme-mode="system"] .payment-dialog,
+  .user-preferences-theme[data-theme-mode="system"] .payment-confirmation-dialog .payment-confirmation-card { background: var(--surface); color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .payment-dialog h2,
+  .user-preferences-theme[data-theme-mode="system"] .payment-confirmation-heading h3,
+  .user-preferences-theme[data-theme-mode="system"] .payment-dialog-amount strong,
+  .user-preferences-theme[data-theme-mode="system"] .payment-method-group h3 { color: var(--primary); }
+  .user-preferences-theme[data-theme-mode="system"] .payment-confirmation-qr { border-color: var(--line); background: var(--control-surface); color: var(--foreground); }
+  .user-preferences-theme[data-theme-mode="system"] .payment-confirmation-close { border-color: var(--line); background: var(--surface); color: var(--foreground); }
+}
+.user-preferences-theme[data-large-text="true"] :where(p, li, td, th, label, button, input, select, textarea, a, small, dd, dt) { font-size: max(1rem, 1.125em); }
+.user-preferences-theme[data-large-text="true"] :where(.settings-section-heading p, .settings-support-note, .settings-save-status, .settings-toggle-row small, .settings-locked-preference small) { font-size: max(14px, 1.125em); }
+.user-preferences-theme[data-reduced-motion="true"] *,
+.user-preferences-theme[data-reduced-motion="true"] *::before,
+.user-preferences-theme[data-reduced-motion="true"] *::after {
+  scroll-behavior: auto !important;
+  animation-duration: .01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: .01ms !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .user-preferences-theme *,
+  .user-preferences-theme *::before,
+  .user-preferences-theme *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}
+
+@media (max-width: 760px) {
+  .settings-palette-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .settings-section { padding: 17px; }
+}
+@media (max-width: 480px) {
+  .settings-choice-row { grid-template-columns: 1fr; }
+  .settings-account-grid { grid-template-columns: 1fr; }
+  .settings-locked-preference { align-items: flex-start; flex-wrap: wrap; }
 }
 
 .treasury-portal .treasury-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
